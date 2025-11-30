@@ -29912,7 +29912,7 @@ var SELECTED_BLOCK_POSITION = null;
             e[e.ZPositive = 4] = "ZPositive",
             e[e.ZNegative = 5] = "ZNegative"
         }(tA || (tA = {}));
-        const nA = tA;
+        const RotationAxis = tA;
         var iA, rA, aA, sA, oA, lA, cA, hA, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
@@ -29954,7 +29954,7 @@ var SELECTED_BLOCK_POSITION = null;
                 set(this, oA, r, "f"),
                 set(this, lA, o, "f");
                 for (let e = -100; e < 100; ++e)
-                    0 == e ? t.setPart(0, 0, 4 * e, eA.Start, 2, nA.YPositive, Environment2.Default, null, 0) : t.setPart(0, 0, 4 * e, eA.Straight, 0, nA.YPositive, Environment2.Default, null, null);
+                    0 == e ? t.setPart(0, 0, 4 * e, eA.Start, 2, RotationAxis.YPositive, Environment2.Default, null, 0) : t.setPart(0, 0, 4 * e, eA.Straight, 0, RotationAxis.YPositive, Environment2.Default, null, null);
                 t.generateMeshes(),
                 n.generateMountains(t.getBounds());
                 const d = t.getStartTransform();
@@ -30366,7 +30366,7 @@ var SELECTED_BLOCK_POSITION = null;
                 set(this, ZA, t, "f")
             }
             rotated(e, t) {
-                const n = t == nA.YNegative || t == nA.XNegative || t == nA.ZNegative;
+                const n = t == RotationAxis.YNegative || t == RotationAxis.XNegative || t == RotationAxis.ZNegative;
                 return new eb(get(this, ZA, "f").map(( ([i,r,a]) => {
                     if (n)
                         switch (e) {
@@ -30400,7 +30400,7 @@ var SELECTED_BLOCK_POSITION = null;
                         default:
                             throw new Error("Invalid rotation")
                         }
-                    return t == nA.YPositive || (t == nA.YNegative ? [i,r] = [-i - 1, -r - 1] : t == nA.XPositive ? [i,r] = [r, -i - 1] : t == nA.XNegative ? [i,r] = [-r - 1, i] : t == nA.ZPositive ? [r,a] = [-a - 1, r] : [r,a] = [a, -r - 1]),
+                    return t == RotationAxis.YPositive || (t == RotationAxis.YNegative ? [i,r] = [-i - 1, -r - 1] : t == RotationAxis.XPositive ? [i,r] = [r, -i - 1] : t == RotationAxis.XNegative ? [i,r] = [-r - 1, i] : t == RotationAxis.ZPositive ? [r,a] = [-a - 1, r] : [r,a] = [a, -r - 1]),
                     [i, r, a]
                 }
                 )))
@@ -30829,7 +30829,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                                 return null;
                             let e = null;
                             startIdList.includes(i) && (e = 0),
-                            n.addPart(4 * r, a, 4 * s, i, o, nA.YPositive, Environment2.Default, null, e)
+                            n.addPart(4 * r, a, 4 * s, i, o, RotationAxis.YPositive, Environment2.Default, null, e)
                         }
                     }
                 }
@@ -30903,7 +30903,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                         return null;
                     let l = null;
                     startIdList.includes(e) && (l = 0),
-                    n.addPart(4 * r, a, 4 * s, e, o, nA.YPositive, Environment2.Default, null, l)
+                    n.addPart(4 * r, a, 4 * s, e, o, RotationAxis.YPositive, Environment2.Default, null, l)
                 }
             }
             return n
@@ -30960,7 +30960,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     }
                     let c = null;
                     startIdList.includes(e) && (c = 0),
-                    r.addPart(4 * t, n, 4 * s, e, o, nA.YPositive, Environment2.Default, l, c)
+                    r.addPart(4 * t, n, 4 * s, e, o, RotationAxis.YPositive, Environment2.Default, l, c)
                 }
             }
             return r
@@ -31268,116 +31268,145 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     }
                     let u = null;
                     startIdList.includes(e) && (u = 0),
-                    null != n && r.addPart(4 * o + s.x, l + s.y, 4 * c + s.z, n, h, nA.YPositive, Environment2.Default, null, u),
-                    r.addPart(4 * o, l, 4 * c, e, h, nA.YPositive, t, d, u)
+                    null != n && r.addPart(4 * o + s.x, l + s.y, 4 * c + s.z, n, h, RotationAxis.YPositive, Environment2.Default, null, u),
+                    r.addPart(4 * o, l, 4 * c, e, h, RotationAxis.YPositive, t, d, u)
                 }
             }
             return r
         }
         function mb(e, t) {
             let n = e;
-            if (t.length - n < 1)
+            if (t.length - n < 1) {
+                console.error("Error: Insufficient data for environment check.");
                 return null;
-            const i = t[n];
-            if (n += 1,
-            !(i in Environment))
+            }
+            var i = t[n];
+            if (n += 1, !(i in Environment)) {
+                console.error("Error: Invalid environment value.");
+                // return null;
+                i = Environment.Summer;
+            }
+            if (t.length - n < 1) {
+                console.error("Error: Insufficient data for sun direction.");
                 return null;
-            if (t.length - n < 1)
+            }
+            var r = t[n];
+            if (n += 1, !Number.isSafeInteger(r) || r < 0 || r >= 180) {
+                console.error("Error: Invalid sun direction value.");
+                r = 90;
+            }
+            const a = new TrackData(i, new SunDirection(r));
+            if (t.length - n < 9) {
+                console.error("Error: Insufficient data for bounds.");
                 return null;
-            const r = t[n];
-            if (n += 1,
-            !Number.isSafeInteger(r) || r < 0 || r >= 180)
-                return null;
-            const a = new TrackData(i,new SunDirection(r));
-            if (t.length - n < 9)
-                return null;
-            const s = t[n] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24;
+            }
+            var s = t[n] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24;
             n += 4;
             const o = t[n] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24;
             n += 4;
             const l = t[n] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24;
             n += 4;
-            const c = 3 & t[n]
-              , h = t[n] >> 2 & 3
-              , d = t[n] >> 4 & 3;
-            if (n += 1,
-            c < 1 || c > 4 || h < 1 || h > 4 || d < 1 || d > 4)
-                return null;
-            for (; n < t.length; ) {
-                if (t.length - n < 1)
-                    return null;
-                const e = t[n + 0];
-                if (n += 1,
-                !(e in eA))
-                    return null;
-                if (t.length - n < 4)
-                    return null;
-                const i = t[n + 0] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24;
-                n += 4;
-                for (let r = 0; r < i; ++r) {
-                    if (t.length - n < c)
-                        return null;
-                    let i = 0;
-                    for (let e = 0; e < c; ++e)
-                        i |= t[n + e] << 8 * e;
-                    if (i += s,
-                    n += c,
-                    t.length - n < h)
-                        return null;
-                    let r = 0;
-                    for (let e = 0; e < h; ++e)
-                        r |= t[n + e] << 8 * e;
-                    if (r += o,
-                    n += h,
-                    t.length - n < d)
-                        return null;
-                    let u = 0;
-                    for (let e = 0; e < d; ++e)
-                        u |= t[n + e] << 8 * e;
-                    if (u += l,
-                    n += d,
-                    t.length - n < 1)
-                        return null;
-                    const p = t[n + 0];
-                    if (n += 1,
-                    p < 0 || p > 3)
-                        return null;
-                    if (t.length - n < 1)
-                        return null;
-                    const f = t[n + 0];
-                    if (n += 1,
-                    !(f in nA))
-                        return null;
-                    if (t.length - n < 1)
-                        return null;
-                    const m = t[n + 0];
-                    if (n += 1,
-                    !(m in Environment2))
-                        return null;
-                    let g = null;
-                    if (checkpointIdList.includes(e)) {
-                        if (t.length - n < 2)
-                            return null;
-                        g = t[n + 0] | t[n + 1] << 8,
-                        n += 2
-                    }
-                    let v = null;
-                    if (startIdList.includes(e)) {
-                        if (t.length - n < 4)
-                            return null;
-                        v = t[n + 0] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24,
-                        n += 4
-                    }
-                    a.addPart(i, r, u, e, p, f, m, g, v)
-                }
+            var c = 3 & t[n];
+            var h = t[n] >> 2 & 3;
+            var d = t[n] >> 4 & 3;
+            if (c < 1 || c > 4 || h < 1 || h > 4 || d < 1 || d > 4) {
+                console.error("Error: Invalid grid size values.");
+                c = Math.max(1, Math.min(c, 4)),
+                h = Math.max(1, Math.min(h, 4)),
+                d = Math.max(1, Math.min(d, 4));
             }
-            return a
+            n += 1;
+            for (; n < t.length; ) {
+            if (t.length - n < 1) {
+                console.error("Error: Insufficient data for part ID.");
+                return null;
+            }
+            var e = t[n + 0];
+            if (n += 1, !(e in eA)) {
+                console.error("Error: Invalid part ID.");
+                e = eA.Block;
+            }
+            if (t.length - n < 4) {
+                console.error("Error: Insufficient data for part count.");
+                return null;
+            }
+            const i = t[n + 0] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24;
+            n += 4;
+            for (let r = 0; r < i; ++r) {
+                if (t.length - n < c) {
+                    console.error("Error: Insufficient data for x-coordinate.");
+                    continue;
+                }
+                let i = 0;
+                for (let e = 0; e < c; ++e)
+                i |= t[n + e] << 8 * e;
+                if (i += s, n += c, t.length - n < h) {
+                    console.error("Error: Insufficient data for y-coordinate.");
+                    continue;
+                }
+                let r = 0;
+                for (let e = 0; e < h; ++e)
+                r |= t[n + e] << 8 * e;
+                if (r += o, n += h, t.length - n < d) {
+                    console.error("Error: Insufficient data for z-coordinate.");
+                    continue;
+                }
+                let u = 0;
+                for (let e = 0; e < d; ++e)
+                u |= t[n + e] << 8 * e;
+                if (u += l, n += d, t.length - n < 1) {
+                    console.error("Error: Insufficient data for rotation.");
+                    continue;
+                }
+                var p = t[n + 0];
+                if (n += 1, p < 0 || p > 3) {
+                    console.error("Error: Invalid rotation value.");
+                    p = 0;
+                }
+                if (t.length - n < 1) {
+                    console.error("Error: Insufficient data for rotation axis.");
+                    continue;
+                }
+                var f = t[n + 0];
+                if (n += 1, !(f in RotationAxis)) {
+                    console.error("Error: Invalid rotation axis value.");
+                    f = RotationAxis.YPositive;
+                }
+                if (t.length - n < 1) {
+                    console.error("Error: Insufficient data for environment.");
+                    continue;
+                }
+                var m = t[n + 0];
+                if (n += 1, !(m in Environment2)) {
+                    console.error("Error: Invalid environment value.");
+                    m = Environment2.Default;
+                }
+                let g = null;
+                if (checkpointIdList.includes(e)) {
+                if (t.length - n < 2) {
+                    console.error("Error: Insufficient data for checkpoint ID.");
+                    continue;
+                }
+                g = t[n + 0] | t[n + 1] << 8, n += 2;
+                }
+                let v = null;
+                if (startIdList.includes(e)) {
+                if (t.length - n < 4) {
+                    console.error("Error: Insufficient data for start offset.");
+                    continue;
+                }
+                v = t[n + 0] | t[n + 1] << 8 | t[n + 2] << 16 | t[n + 3] << 24, n += 4;
+                }
+                a.addPart(i, r, u, e, p, f, m, g, v);
+            }
+            }
+            return a;
         }
         const gb = [[new Quaternion(0,0,0,1), new Quaternion(0,.7071067811865475,0,.7071067811865476), new Quaternion(0,1,0,0), new Quaternion(0,.7071067811865476,0,-.7071067811865475)], [new Quaternion(0,0,1,0), new Quaternion(.7071067811865475,0,.7071067811865476,0), new Quaternion(1,0,0,0), new Quaternion(.7071067811865476,0,-.7071067811865475,0)], [new Quaternion(0,0,-.7071067811865477,.7071067811865475), new Quaternion(.5,.5,-.5,.5), new Quaternion(.7071067811865475,.7071067811865477,0,0), new Quaternion(.5,.5,.5,-.5)], [new Quaternion(0,0,.7071067811865475,.7071067811865476), new Quaternion(.5,-.5,.5,.5), new Quaternion(.7071067811865476,-.7071067811865475,0,0), new Quaternion(.5,-.5,-.5,-.5)], [new Quaternion(.7071067811865475,0,0,.7071067811865476), new Quaternion(.5,.5,.5,.5), new Quaternion(0,.7071067811865476,.7071067811865475,0), new Quaternion(-.5,.5,.5,-.5)], [new Quaternion(-.7071067811865477,0,0,.7071067811865475), new Quaternion(-.5,-.5,.5,.5), new Quaternion(0,-.7071067811865475,.7071067811865477,0), new Quaternion(.5,-.5,.5,-.5)]];
         function rotationAndAxisToQuaternion(rotation, axis) {
             return gb[axis][rotation].clone()
         }
-        var wb, yb, Ab, bb, toByteArray, set = function(e, t, n, i, r) {
+        var wb, yb, Ab, bb, toByteArray, lossyCompressByteArray, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
             if ("a" === i && !r)
@@ -31420,6 +31449,86 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 rotationAxis: t.part.rotationAxis,
                 startOffset: t.startOffset.clone()
             } : null
+        }
+        ,
+        lossyCompressByteArray = function(byteArray) {
+            return new Promise((resolve, reject) => {
+                // compute number of pixels needed (3 bytes per pixel: R,G,B)
+                const pixels = Math.ceil(byteArray.length);
+                const imageSize = Math.max(1, Math.ceil(Math.sqrt(pixels)));
+                const canvas = document.createElement("canvas");
+
+                canvas.width = imageSize;
+                canvas.height = imageSize;
+
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    // cannot get 2d context, return original bytes as fallback
+                    resolve(byteArray);
+                    return;
+                }
+
+                const imageData = ctx.createImageData(imageSize, imageSize);
+
+                // fill image data from byteArray, set missing components to 0 and alpha to 255
+                let di = 0;
+                for (let p = 0; p < byteArray.length; p += 1) {
+                    imageData.data[di++] = byteArray[p]; // R
+                    imageData.data[di++] = byteArray[p]; // G
+                    imageData.data[di++] = byteArray[p]; // B
+                    imageData.data[di++] = 255;          // A (opaque)
+                }
+
+                // Ensure any remaining alpha bytes are opaque
+                // for (let a = 3; a < imageData.data.length; a += 4) {
+                //     imageData.data[a] = 255;
+                // }
+
+                ctx.putImageData(imageData, 0, 0);
+
+                const pngDataUrl = canvas.toDataURL('image/png');
+                console.log(pngDataUrl);
+
+                // compress via JPEG data URL (lossy) and draw back to canvas
+                const jpegDataUrl = canvas.toDataURL('image/jpeg', 1);
+                console.log(jpegDataUrl);
+
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Draw the compressed image
+
+                    const compressedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                    const compressedByteArray = new Uint8Array(byteArray.length);
+
+                    for (let p = 0; p < byteArray.length; p += 1) {
+                        let ci = 4 * p;
+                        let v0 = compressedImageData[ci];     // R
+                        let v1 = compressedImageData[ci + 1]; // G
+                        let v2 = compressedImageData[ci + 2]; // B
+                        // average the RGB values to reconstruct original byte
+                        compressedByteArray[p] = Math.min(v0, v1, v2);
+                    }
+                    console.log(byteArray);
+                    resolve(compressedByteArray);
+                };
+                img.onerror = () => {
+                    // if image couldn't be loaded/decoded, return original bytes
+                    resolve(byteArray);
+                };
+                img.src = jpegDataUrl;
+            });
+
+            // for (let x = 0; x < imageSize; x++) {
+            //     for (let y = 0; y < imageSize; y++) {
+            //         const index = (y * imageData.width + x) * 4; // Calculate array index
+
+            //         imageData.data[index + 0] = 255; // Red
+            //         imageData.data[index + 1] = 0;   // Green
+            //         imageData.data[index + 2] = 0;   // Blue
+            //         imageData.data[index + 3] = 255; // Alpha
+            //     }
+            // }
         }
         ,
         toByteArray = function() {
@@ -31586,14 +31695,45 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 r.set(t, 1),
                 r[1 + t.length] = n,
                 null != i && r.set(i, 1 + t.length + 1);
-                const a = get(this, wb, "m", toByteArray).call(this)
-                  , s = new Yg.Deflate({
+                const byteArray = get(this, wb, "m", toByteArray).call(this);
+
+                const compressedByteArray = get(this, wb, "m", lossyCompressByteArray).call(this, byteArray);
+                compressedByteArray.then((byteArray => {
+                    console.log(byteArray);
+
+                    const r = new Uint8Array(1 + t.length + 1 + n);
+                    r[0] = t.length,
+                    r.set(t, 1),
+                    r[1 + t.length] = n,
+                    null != i && r.set(i, 1 + t.length + 1);
+                    
+                    const s = new Yg.Deflate({
+                        level: 9,
+                        windowBits: 9,
+                        memLevel: 9
+                    });
+
+                    s.push(r, !1),
+                    s.push(byteArray, !0);
+                    const o = BA(s.result)
+                    , l = new Yg.Deflate({
+                        level: 9,
+                        windowBits: 15,
+                        memLevel: 9
+                    });
+                    l.push(o, !0);
+                    const newCode = "PolyTrack1" + BA(l.result);
+                    console.log(newCode);
+                }));
+
+                const s = new Yg.Deflate({
                     level: 9,
                     windowBits: 9,
                     memLevel: 9
                 });
+
                 s.push(r, !1),
-                s.push(a, !0);
+                s.push(byteArray, !0);
                 const o = BA(s.result)
                   , l = new Yg.Deflate({
                     level: 9,
@@ -31645,41 +31785,63 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 const t = e.replace(/\s+/g, "")
                   , n = function(e) {
                     const t = "PolyTrack1";
-                    if (!e.startsWith(t))
+                    if (!e.startsWith(t)) {
+                        console.error("fromExportString: missing PolyTrack1 prefix");
                         return null;
+                    }
                     const n = UA(e.substring(10));
-                    if (null == n)
+                    if (null == n) {
+                        console.error("fromExportString: base64 decode failed for PolyTrack1 payload");
                         return null;
+                    }
                     const i = new Yg.Inflate({
                         to: "string"
                     });
                     if (i.push(n, !0),
-                    i.err)
+                    i.err) {
+                        console.error("fromExportString: outer inflate failed for PolyTrack1");
                         return null;
+                    }
                     const r = i.result;
-                    if ("string" != typeof r)
+                    if ("string" != typeof r) {
+                        console.error("fromExportString: outer inflate result is not a string for PolyTrack1");
                         return null;
+                    }
                     const a = UA(r);
-                    if (null == a)
+                    if (null == a) {
+                        console.error("fromExportString: base64 decode failed for PolyTrack1 inner payload");
                         return null;
+                    }
                     const s = new Yg.Inflate;
                     if (s.push(a, !0),
-                    s.err)
+                    s.err) {
+                        console.error("fromExportString: inner inflate failed for PolyTrack1");
                         return null;
+                    }
                     const o = s.result;
-                    if (!(o instanceof Uint8Array))
+                    if (!(o instanceof Uint8Array)) {
+                        console.error("fromExportString: inner inflate result is not Uint8Array for PolyTrack1");
                         return null;
+                    }
                     const l = o[0];
-                    if (o.length < 1 + l)
+                    if (o.length < 1 + l) {
+                        console.error("fromExportString: name length mismatch in PolyTrack1 payload");
                         return null;
+                    }
                     const c = new TextDecoder("utf-8").decode(o.subarray(1, 1 + l))
                       , h = o[1 + l];
-                    if (o.length < 1 + l + 1 + h)
+                    if (o.length < 1 + l + 1 + h) {
+                        console.error("fromExportString: author length mismatch in PolyTrack1 payload");
                         return null;
+                    }
                     let d;
                     d = h > 0 ? new TextDecoder("utf-8").decode(o.subarray(1 + l + 1, 1 + l + 1 + h)) : null;
                     const u = mb(1 + l + 1 + h, o);
-                    return null == u ? null : {
+                    if (null == u) {
+                        console.error("fromExportString: failed to parse track data for PolyTrack1");
+                        return null;
+                    }
+                    return {
                         trackMetadata: {
                             name: c,
                             author: d
@@ -31690,25 +31852,38 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 if (null != n)
                     return n;
                 const i = function(e) {
-                    if (!e.startsWith("v3"))
+                    if (!e.startsWith("v3")) {
+                        console.error("fromExportString: missing v3 prefix");
                         return null;
+                    }
                     const t = UA(e.substring(2, 4));
-                    if (null == t)
+                    if (null == t) {
+                        console.error("fromExportString: base64 decode failed for v3 name length");
                         return null;
-                    if (1 != t.length)
+                    }
+                    if (1 != t.length) {
+                        console.error("fromExportString: invalid v3 name length array");
                         return null;
+                    }
                     const n = t[0]
                       , i = UA(e.substring(4, 4 + n));
-                    if (null == i)
+                    if (null == i) {
+                        console.error("fromExportString: base64 decode failed for v3 name");
                         return null;
+                    }
                     let r;
                     try {
                         r = new TextDecoder("utf-8").decode(i)
                     } catch (e) {
-                        return null
+                        console.error("fromExportString: utf-8 decode failed for v3 name");
+                        return null;
                     }
                     const a = fb(e.substring(4 + n));
-                    return null == a ? null : {
+                    if (null == a) {
+                        console.error("fromExportString: fb decode failed for v3 track data");
+                        return null;
+                    }
+                    return {
                         trackMetadata: {
                             name: r,
                             author: null
@@ -31719,26 +31894,39 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 if (null != i)
                     return i;
                 const r = function(e) {
-                    if (!e.startsWith("v2"))
+                    if (!e.startsWith("v2")) {
+                        console.error("fromExportString: missing v2 prefix");
                         return null;
+                    }
                     const t = UA(e.substring(2, 4));
-                    if (null == t)
+                    if (null == t) {
+                        console.error("fromExportString: base64 decode failed for v2 name length");
                         return null;
-                    if (1 != t.length)
+                    }
+                    if (1 != t.length) {
+                        console.error("fromExportString: invalid v2 name length array");
                         return null;
+                    }
                     const n = t[0]
                       , i = Math.ceil(n / 3 * 4)
                       , r = UA(e.substring(4, 4 + i));
-                    if (null == r)
+                    if (null == r) {
+                        console.error("fromExportString: base64 decode failed for v2 name");
                         return null;
+                    }
                     let a;
                     try {
                         a = new TextDecoder("utf-8").decode(r)
                     } catch (e) {
-                        return null
+                        console.error("fromExportString: utf-8 decode failed for v2 name");
+                        return null;
                     }
                     const s = pb(e.substring(4 + i));
-                    return null == s ? null : {
+                    if (null == s) {
+                        console.error("fromExportString: pb decode failed for v2 track data");
+                        return null;
+                    }
+                    return {
                         trackMetadata: {
                             name: a,
                             author: null
@@ -31749,24 +31937,34 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 if (null != r)
                     return r;
                 const a = function(e) {
-                    if (!e.startsWith("v1n"))
+                    if (!e.startsWith("v1n")) {
+                        console.error("fromExportString: missing v1n prefix");
                         return null;
+                    }
                     const t = Kg(e.substring(3, 5));
-                    if (null == t)
+                    if (null == t) {
+                        console.error("fromExportString: base64 decode (Kg) failed for v1n");
                         return null;
-                    if (1 != t.length)
+                    }
+                    if (1 != t.length) {
+                        console.error("fromExportString: invalid v1n name length array");
                         return null;
+                    }
                     const n = t[0]
                       , i = e.substring(5, 5 + n);
                     let r;
                     try {
                         r = decodeURIComponent(i)
                     } catch (e) {
-                        return console.error(e),
-                        null
+                        console.error("fromExportString: decodeURIComponent failed for v1n name");
+                        return null;
                     }
                     const a = ub(e.substring(5 + n));
-                    return null == a ? null : {
+                    if (null == a) {
+                        console.error("fromExportString: ub decode failed for v1n track data");
+                        return null;
+                    }
+                    return {
                         trackMetadata: {
                             name: r,
                             author: null
@@ -31777,7 +31975,11 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 if (null != a)
                     return a;
                 const s = db(e);
-                return null != s ? s : null
+                if (null == s) {
+                    console.error("fromExportString: db parse failed (legacy JSON/format)");
+                    return null;
+                }
+                return s
             }
             createThumbnail() {
                 let e = 1 / 0
@@ -31963,7 +32165,8 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             setPart(e, t, n, i, r, a, s, o, l) {
                 const c = get(this, Cb, "f").getPart(i);
                 if (s != Environment2.Default && !c.colors.has(s))
-                    throw new Error("Track part color does not exist");
+                    s = Environment2.Default;
+
                 const h = rotationAndAxisToQuaternion(r, a)
                   , d = new Vector3(e * Gb.partSize,t * Gb.partSize,n * Gb.partSize)
                   , u = (new Matrix4).compose(d, h, new Vector3(1,1,1))
@@ -31972,7 +32175,8 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 c.configuration.tiles.rotated(r, a).forEach(( (i, r, a) => {
                     const s = (e + i).toString() + "|" + (t + r).toString() + "|" + (n + a).toString();
                     if (t + r < 0)
-                        throw new Error("Track part below ground");
+                        return;
+                        // throw new Error("Track part below ground");
                     {
                         const e = get(this, Rb, "f").get(s);
                         null == e ? get(this, Rb, "f").set(s, [p]) : e.push(p)
@@ -33771,27 +33975,27 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 }
                 )),
                 p.appendChild(get(this, oE, "f"));
-                for (const e of [nA.YPositive, nA.YNegative, nA.XPositive, nA.XNegative, nA.ZPositive, nA.ZNegative]) {
+                for (const e of [RotationAxis.YPositive, RotationAxis.YNegative, RotationAxis.XPositive, RotationAxis.XNegative, RotationAxis.ZPositive, RotationAxis.ZNegative]) {
                     const n = document.createElement("button");
                     switch (n.inert = !0,
                     n.tabIndex = -1,
                     e) {
-                    case nA.YPositive:
+                    case RotationAxis.YPositive:
                         n.innerHTML = '<img src="images/rotation_axis_y_positive.svg">';
                         break;
-                    case nA.YNegative:
+                    case RotationAxis.YNegative:
                         n.innerHTML = '<img src="images/rotation_axis_y_negative.svg">';
                         break;
-                    case nA.XPositive:
+                    case RotationAxis.XPositive:
                         n.innerHTML = '<img src="images/rotation_axis_x_positive.svg">';
                         break;
-                    case nA.XNegative:
+                    case RotationAxis.XNegative:
                         n.innerHTML = '<img src="images/rotation_axis_x_negative.svg">';
                         break;
-                    case nA.ZPositive:
+                    case RotationAxis.ZPositive:
                         n.innerHTML = '<img src="images/rotation_axis_z_positive.svg">';
                         break;
-                    case nA.ZNegative:
+                    case RotationAxis.ZNegative:
                         n.innerHTML = '<img src="images/rotation_axis_z_negative.svg">'
                     }
                     n.addEventListener("click", ( () => {
@@ -33799,7 +34003,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                         editorAxisCallback(e)
                     }
                     )),
-                    e == nA.YPositive && n.classList.add("selected"),
+                    e == RotationAxis.YPositive && n.classList.add("selected"),
                     p.appendChild(n),
                     get(this, lE, "f").push([e, n])
                 }
@@ -33833,22 +34037,22 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             set rotationAxis(e) {
                 let t;
                 switch (e) {
-                case nA.YPositive:
+                case RotationAxis.YPositive:
                     t = "images/rotation_axis_y_positive.svg";
                     break;
-                case nA.YNegative:
+                case RotationAxis.YNegative:
                     t = "images/rotation_axis_y_negative.svg";
                     break;
-                case nA.XPositive:
+                case RotationAxis.XPositive:
                     t = "images/rotation_axis_x_positive.svg";
                     break;
-                case nA.XNegative:
+                case RotationAxis.XNegative:
                     t = "images/rotation_axis_x_negative.svg";
                     break;
-                case nA.ZPositive:
+                case RotationAxis.ZPositive:
                     t = "images/rotation_axis_z_positive.svg";
                     break;
-                case nA.ZNegative:
+                case RotationAxis.ZNegative:
                     t = "images/rotation_axis_z_negative.svg"
                 }
                 get(this, oE, "f").innerHTML = "";
@@ -34360,7 +34564,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
             ))
         }
-        var editorFunctionsMap, audioContext, audioPerformanceMetric, LanguageMap, gameCanvas, loadingScreen, trackEnvironment, trackData, UserRecordManager, UserTrackManager, UserDataManager, selectedProfileSlot, confirmBox, touchEnabled, KeybindManager, testCallback, editorEnabled, hiddenOuterEditorDiv, topInnerEditorDiv, editorSavedTextDiv, editorSavedTextTimeoutId, editorSidePanelDiv, editorCategoryPanelDiv, editorHeightSelectorDiv, checkpointOrderSelector, trackCategorySelector, lS, editorToolbar, hS, dS, uS, pS, fS, mS, gS, vS, wS, yS, AS, bS, xS, editorCamera, editorUserCamera, heightModifierHeldDown, editorMoveForwards, editorMoveRight, editorMoveBackwards, editorMoveLeft, editorRotateViewUp, editorRotateViewDown, editorRotateViewLeft, editorRotateViewRight, DS, NS, BS, selectedBlockGhostModels, ghostBlockMaterial, gridMaterial, gridCubeMesh, gridMesh, editorDelete, mouseDown, mousePosition, jS, QS, selectedBlockPosition, KS, selectedBlockRotation, selectedBlockRotationAxis, smallGridEnabled, blockMixingEnabled, selectedBlockData, eM, tM, nM, blockDataMap, selectedBlockId, selectedBlockColor, pillarSelectedBlocks, editorUndoStack, sM, oM, createTrackNameUIElement, exitEditor, editorTest, editorPick, editorCopy, editorUndo, editorDeleteSelection, editorSelectPaste, editorSaveTrack, defaultOpenPartsMenu, getBlockEnvironment, mM, gM, setEditorSelectedCategory, setEditorSelectedBlock, editorHeight, editorMove, updatePartRotation, playEditorEditSound, getSelectedBlockPosition, getOverlappingBlockData, editorDeleteTiles, editorCameraMovementUpdate, TM, set = function(e, t, n, i, r) {
+        var editorFunctionsMap, audioContext, audioPerformanceMetric, LanguageMap, gameCanvas, loadingScreen, trackEnvironment, trackData, UserRecordManager, UserTrackManager, UserDataManager, selectedProfileSlot, confirmBox, touchEnabled, KeybindManager, testCallback, editorEnabled, hiddenOuterEditorDiv, topInnerEditorDiv, editorSavedTextDiv, editorSavedTextTimeoutId, editorSidePanelDiv, editorCategoryPanelDiv, editorHeightSelectorDiv, checkpointOrderSelector, trackCategorySelector, lS, editorToolbar, hS, dS, uS, pS, fS, mS, gS, vS, wS, yS, AS, bS, xS, editorCamera, editorUserCamera, heightModifierHeldDown, editorMoveForwards, editorMoveRight, editorMoveBackwards, editorMoveLeft, editorRotateViewUp, editorRotateViewDown, editorRotateViewLeft, editorRotateViewRight, DS, NS, BS, selectedBlockGhostModels, ghostBlockMaterial, gridMaterial, gridCubeMesh, gridMesh, editorDelete, mouseDown, mousePosition, jS, QS, selectedBlockPosition, KS, selectedBlockRotation, selectedBlockRotationAxis, smallGridEnabled, blockMixingEnabled, selectedBlockData, eM, tM, nM, blockDataMap, selectedBlockId, selectedBlockColor, pillarSelectedBlocks, editorUndoStack, sM, oM, createTrackNameUIElement, exitEditor, editorTest, editorPick, editorCopy, editorUndo, editorDeleteSelection, editorSelectPaste, editorSaveTrack, defaultOpenPartsMenu, getBlockEnvironment, mM, gM, setEditorSelectedCategory, setEditorSelectedBlock, editorHeight, editorMove, updatePartRotation, playEditorEditSound, getSelectedBlockPosition, getOverlappingBlockData, editorDeleteTiles, editorCameraMovementUpdate, TM, generateBuilding, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
             if ("a" === i && !r)
@@ -35138,9 +35342,9 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             if (null != e) {
                 let t, n;
                 t = get(this, smallGridEnabled, "f") ? 4 : 1,
-                n = get(this, selectedBlockRotationAxis, "f") == nA.XPositive || get(this, selectedBlockRotationAxis, "f") == nA.XNegative ? Math.round(e.x) : Math.round(e.x / t) * t;
+                n = get(this, selectedBlockRotationAxis, "f") == RotationAxis.XPositive || get(this, selectedBlockRotationAxis, "f") == RotationAxis.XNegative ? Math.round(e.x) : Math.round(e.x / t) * t;
                 const i = Math.round(e.y) + get(this, KS, "f");
-                let r = get(this, selectedBlockRotationAxis, "f") == nA.ZPositive || get(this, selectedBlockRotationAxis, "f") == nA.ZNegative ? Math.round(e.z) : Math.round(e.z / t) * t;
+                let r = get(this, selectedBlockRotationAxis, "f") == RotationAxis.ZPositive || get(this, selectedBlockRotationAxis, "f") == RotationAxis.ZNegative ? Math.round(e.z) : Math.round(e.z / t) * t;
                 return new Vector3(n,i,r)   // selected block position
             }
             return null
@@ -35235,6 +35439,12 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         TM = function() {
             return !!get(this, editorEnabled, "f") && (!get(this, confirmBox, "f").isOpen && null == get(this, lS, "f") && !get(this, trackCategorySelector, "f").isOpen && null == get(this, hS, "f") && null == get(this, dS, "f"))
         }
+        ,
+        generateBuilding = function() {
+            const blocksList = [];
+
+            
+        }
         ;
         const TrackEditor = class {
             constructor(e, t, n, i, r, a, s, o, l, c, h, d, u, p) {
@@ -35307,7 +35517,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 selectedBlockPosition.set(this, null),
                 KS.set(this, 0),
                 selectedBlockRotation.set(this, 0),
-                selectedBlockRotationAxis.set(this, nA.YPositive),
+                selectedBlockRotationAxis.set(this, RotationAxis.YPositive),
                 smallGridEnabled.set(this, !0),
                 blockMixingEnabled.set(this, !1),
                 selectedBlockData.set(this, null),
@@ -35950,7 +36160,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                                         if (null != R) {
                                             let L = null;
                                             R.type == eA.Start && (L = 0),
-                                            e.setPart(4 * R.x, R.y, 4 * R.z, R.type, R.direction, nA.YPositive, Environment2.Default, null, L)
+                                            e.setPart(4 * R.x, R.y, 4 * R.z, R.type, R.direction, RotationAxis.YPositive, Environment2.Default, null, L)
                                         }
                             } while (t)
                         }(get(this, trackEnvironment, "f")),
@@ -36520,7 +36730,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                                 let selectedEnvironment = get(this, editorFunctionsMap, "m", getBlockEnvironment).call(this);
                                 let selectedRotation = get(this, selectedBlockRotation, "f");
                                 let selectedAxis = get(this, selectedBlockRotationAxis, "f");
-
+                                
                                 if (n.id == 158) {
                                     let selectedBlocks = get(this, pillarSelectedBlocks, "f");
                                     if (selectedBlocks == null) {
@@ -36621,6 +36831,15 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                                     };
                                     const undoStack = get(this, editorUndoStack, "f");
                                     undoStack.push({type: "placed", blocks: placedBlocks});
+                                } else if (n.id == -1) {
+                                    const buildingBlocks = get(this, editorFunctionsMap, "m", generateBuilding).call(this);
+                                    for (const block of buildingBlocks) {
+                                        get(this, trackEnvironment, "f").setPart(      // add the part in the track
+                                            block[0], block[1], block[2], block[3], block[4], block[5], block[6], block[7], block[8]
+                                        )
+                                    };
+                                    const undoStack = get(this, editorUndoStack, "f");
+                                    undoStack.push({type: "placed", blocks: buildingBlocks});
                                 } else {
                                     const undoStack = get(this, editorUndoStack, "f");  // push to undo stack
                                     undoStack.push({type:"placed", blocks: [[e.x, e.y, e.z, n.id, selectedRotation, selectedAxis, selectedEnvironment, checkpointOrder, startOrder]]});
@@ -36701,7 +36920,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 set(this, UM, new TrackEditor(a,s,o,c,e,t,n,h,d,u,p,f,l,m), "f"),
                 get(this, UM, "f").enable(),
                 get(this, IM, "f").clear(),
-                get(this, IM, "f").setPart(0, 0, 0, eA.Start, 0, nA.YPositive, Environment2.Default, null, 0),
+                get(this, IM, "f").setPart(0, 0, 0, eA.Start, 0, RotationAxis.YPositive, Environment2.Default, null, 0),
                 get(this, IM, "f").generateMeshes(),
                 o.setCamera(get(this, UM, "f").camera),
                 get(this, UM, "f").setTestCallback(( () => {
@@ -42485,7 +42704,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     l(eA.BlockSlopeVerticalInnerCornerTop, eA.WallTrackTopInnerCorner),
                     l(eA.BlockSlopeVerticalInnerCornerBottom, eA.WallTrackBottomInnerCorner),
                     l(eA.BlockInnerCorner, eA.WallTrackMiddleCorner);
-                    const c = (e, t) => e.x == t.x && e.y == t.y && e.z == t.z && e.rotation == t.rotation && e.rotationAxis == t.rotationAxis || e.x == t.x && e.y == t.y + 3 && e.z == t.z && e.rotation == t.rotation && (e.rotationAxis == nA.YPositive && t.rotationAxis == nA.YNegative || e.rotationAxis == nA.YNegative && t.rotationAxis == nA.YPositive || e.rotationAxis == nA.XPositive && t.rotationAxis == nA.XNegative || e.rotationAxis == nA.XNegative && t.rotationAxis == nA.XPositive || e.rotationAxis == nA.ZPositive && t.rotationAxis == nA.ZNegative || e.rotationAxis == nA.ZNegative && t.rotationAxis == nA.ZPositive);
+                    const c = (e, t) => e.x == t.x && e.y == t.y && e.z == t.z && e.rotation == t.rotation && e.rotationAxis == t.rotationAxis || e.x == t.x && e.y == t.y + 3 && e.z == t.z && e.rotation == t.rotation && (e.rotationAxis == RotationAxis.YPositive && t.rotationAxis == RotationAxis.YNegative || e.rotationAxis == RotationAxis.YNegative && t.rotationAxis == RotationAxis.YPositive || e.rotationAxis == RotationAxis.XPositive && t.rotationAxis == RotationAxis.XNegative || e.rotationAxis == RotationAxis.XNegative && t.rotationAxis == RotationAxis.XPositive || e.rotationAxis == RotationAxis.ZPositive && t.rotationAxis == RotationAxis.ZNegative || e.rotationAxis == RotationAxis.ZNegative && t.rotationAxis == RotationAxis.ZPositive);
                     return l(eA.BlockSlopeVerticalBottom, eA.PlaneSlopeVerticalBottom, c),
                     l(eA.BlockSlopeVerticalBottom, eA.WallTrackBottom, c),
                     l(eA.BlockSlopeVerticalBottom, eA.SlopeUpVertical, c),
@@ -42508,22 +42727,22 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     l(eA.WallTrackTopInnerCorner, eA.WallTrackCeilingCorner, ( (e, t) => {
                         let n;
                         switch (e.rotationAxis) {
-                        case nA.YPositive:
+                        case RotationAxis.YPositive:
                             n = new Vector3(0,1,0);
                             break;
-                        case nA.YNegative:
+                        case RotationAxis.YNegative:
                             n = new Vector3(0,-1,0);
                             break;
-                        case nA.XPositive:
+                        case RotationAxis.XPositive:
                             n = new Vector3(1,0,0);
                             break;
-                        case nA.XNegative:
+                        case RotationAxis.XNegative:
                             n = new Vector3(-1,0,0);
                             break;
-                        case nA.ZPositive:
+                        case RotationAxis.ZPositive:
                             n = new Vector3(0,0,1);
                             break;
-                        case nA.ZNegative:
+                        case RotationAxis.ZNegative:
                             n = new Vector3(0,0,-1);
                             break;
                         default:
@@ -42535,22 +42754,22 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     l(eA.WallTrackTopInnerCorner, eA.WallTrackCeilingPlaneCorner, ( (e, t) => {
                         let n;
                         switch (e.rotationAxis) {
-                        case nA.YPositive:
+                        case RotationAxis.YPositive:
                             n = new Vector3(0,1,0);
                             break;
-                        case nA.YNegative:
+                        case RotationAxis.YNegative:
                             n = new Vector3(0,-1,0);
                             break;
-                        case nA.XPositive:
+                        case RotationAxis.XPositive:
                             n = new Vector3(1,0,0);
                             break;
-                        case nA.XNegative:
+                        case RotationAxis.XNegative:
                             n = new Vector3(-1,0,0);
                             break;
-                        case nA.ZPositive:
+                        case RotationAxis.ZPositive:
                             n = new Vector3(0,0,1);
                             break;
-                        case nA.ZNegative:
+                        case RotationAxis.ZNegative:
                             n = new Vector3(0,0,-1);
                             break;
                         default:
