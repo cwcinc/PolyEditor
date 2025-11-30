@@ -1,5 +1,6 @@
 const modVersion = "0.1.0";
 var SELECTED_BLOCK_POSITION = null;
+var TOTAL_BLOCKS = 0;
 
 ( () => {
     var e = {
@@ -657,7 +658,7 @@ var SELECTED_BLOCK_POSITION = null;
               , r = n.n(i)
               , a = n(6314)
               , s = n.n(a)()(r());
-            s.push([e.id, "\n.debug {\n\tmargin: 0.25em;\n\tpadding: 0;\n\tposition: absolute;\n\tleft: 0;\n\tbottom: 0;\n\tfont-size: 28px;\n\ttext-shadow: 0 0 5px #000;\n\tcolor: #fff;\n\tz-index: 10;\n}\n", ""]);
+            s.push([e.id, "\n.debug {\n\tmargin: 0.25em;\n\tpadding: 0;\n\tposition: absolute;\n\tleft: 0;\n\tbottom: 25px;\n\tfont-size: 28px;\n\ttext-shadow: 0 0 5px #000;\n\tcolor: #fff;\n\tz-index: 10;\n}\n", ""]);
             const o = s
         }
         ,
@@ -32129,7 +32130,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 Bb.set(this, []),
                 set(this, Tb, e, "f"),
                 set(this, _b, t, "f"),
-                set(this, Cb, n, "f")
+                set(this, Cb, n, "f");
             }
             get sunDirection() {
                 return get(this, Pb, "f")
@@ -32171,27 +32172,34 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                   , d = new Vector3(e * Gb.partSize,t * Gb.partSize,n * Gb.partSize)
                   , u = (new Matrix4).compose(d, h, new Vector3(1,1,1))
                   , p = new Hb(e,t,n,r,a,s,c,u,o,l);
-                get(this, Ib, "f").push(p);
+                let belowGround = false;
                 c.configuration.tiles.rotated(r, a).forEach(( (i, r, a) => {
                     const s = (e + i).toString() + "|" + (t + r).toString() + "|" + (n + a).toString();
-                    if (t + r < 0)
+                    if (t + r < 0) {
+                        belowGround = true;
                         return;
-                        // throw new Error("Track part below ground");
+                    }
                     {
                         const e = get(this, Rb, "f").get(s);
                         null == e ? get(this, Rb, "f").set(s, [p]) : e.push(p)
                     }
                 }
                 ));
+                if (belowGround) {
+                    console.warn("Part placed below ground, ignoring placement.");
+                    return;
+                }
+                get(this, Ib, "f").push(p);
                 const f = get(this, Lb, "f").get(i);
-                null == f ? get(this, Lb, "f").set(i, [p]) : f.push(p)
+                null == f ? get(this, Lb, "f").set(i, [p]) : f.push(p);
             }
             deletePartsAt(e, t, n) {
                 const i = get(this, Rb, "f").get(e.toString() + "|" + t.toString() + "|" + n.toString());
                 if (null == i)
                     return !1;
-                for (const e of i)
+                for (const e of i) {
                     get(this, Mb, "m", Ob).call(this, e);
+                }
                 return !0
             }
             deleteSpecificPart(e, t, n, i, r, a) {
@@ -32389,6 +32397,9 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 for (const t of get(this, Ib, "f"))
                     e.addPart(t.x, t.y, t.z, t.type.configuration.id, t.rotation, t.rotationAxis, t.color, t.checkpointOrder, t.startOrder);
                 return e
+            }
+            getBlockCount() {
+                return get(this, Ib, "f").length;
             }
             loadTrackData(e, t=!0) {
                 return this.clear(),
@@ -32803,6 +32814,10 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
             refresh(height) {
                 get(this, heightIndicator, "f").textContent = get(this, yx, "f").get("Height") + ": " + height.toString();
+
+                const totalBlocks = TOTAL_BLOCKS;
+                get(this, heightIndicator, "f").textContent += ` Blocks: ${totalBlocks}`;
+
                 let location = SELECTED_BLOCK_POSITION;
                 if (location != null) {
                     get(this, heightIndicator, "f").textContent += ` Location: (${location.x}, ${location.y}, ${location.z})`;
@@ -34564,7 +34579,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
             ))
         }
-        var editorFunctionsMap, audioContext, audioPerformanceMetric, LanguageMap, gameCanvas, loadingScreen, trackEnvironment, trackData, UserRecordManager, UserTrackManager, UserDataManager, selectedProfileSlot, confirmBox, touchEnabled, KeybindManager, testCallback, editorEnabled, hiddenOuterEditorDiv, topInnerEditorDiv, editorSavedTextDiv, editorSavedTextTimeoutId, editorSidePanelDiv, editorCategoryPanelDiv, editorHeightSelectorDiv, checkpointOrderSelector, trackCategorySelector, lS, editorToolbar, hS, dS, uS, pS, fS, mS, gS, vS, wS, yS, AS, bS, xS, editorCamera, editorUserCamera, heightModifierHeldDown, editorMoveForwards, editorMoveRight, editorMoveBackwards, editorMoveLeft, editorRotateViewUp, editorRotateViewDown, editorRotateViewLeft, editorRotateViewRight, DS, NS, BS, selectedBlockGhostModels, ghostBlockMaterial, gridMaterial, gridCubeMesh, gridMesh, editorDelete, mouseDown, mousePosition, jS, QS, selectedBlockPosition, KS, selectedBlockRotation, selectedBlockRotationAxis, smallGridEnabled, blockMixingEnabled, selectedBlockData, eM, tM, nM, blockDataMap, selectedBlockId, selectedBlockColor, pillarSelectedBlocks, editorUndoStack, sM, oM, createTrackNameUIElement, exitEditor, editorTest, editorPick, editorCopy, editorUndo, editorDeleteSelection, editorSelectPaste, editorSaveTrack, defaultOpenPartsMenu, getBlockEnvironment, mM, gM, setEditorSelectedCategory, setEditorSelectedBlock, editorHeight, editorMove, updatePartRotation, playEditorEditSound, getSelectedBlockPosition, getOverlappingBlockData, editorDeleteTiles, editorCameraMovementUpdate, TM, generateBuilding, set = function(e, t, n, i, r) {
+        var editorFunctionsMap, audioContext, audioPerformanceMetric, LanguageMap, gameCanvas, loadingScreen, trackEnvironment, trackData, UserRecordManager, UserTrackManager, UserDataManager, selectedProfileSlot, confirmBox, touchEnabled, KeybindManager, testCallback, editorEnabled, hiddenOuterEditorDiv, topInnerEditorDiv, editorSavedTextDiv, editorSavedTextTimeoutId, editorSidePanelDiv, editorCategoryPanelDiv, editorHeightSelectorDiv, checkpointOrderSelector, trackCategorySelector, lS, editorToolbar, hS, dS, uS, pS, fS, mS, gS, vS, wS, yS, AS, bS, xS, editorCamera, editorUserCamera, heightModifierHeldDown, editorMoveForwards, editorMoveRight, editorMoveBackwards, editorMoveLeft, editorRotateViewUp, editorRotateViewDown, editorRotateViewLeft, editorRotateViewRight, DS, NS, BS, selectedBlockGhostModels, ghostBlockMaterial, gridMaterial, gridCubeMesh, gridMesh, editorDelete, mouseDown, mousePosition, jS, QS, selectedBlockPosition, KS, selectedBlockRotation, selectedBlockRotationAxis, smallGridEnabled, blockMixingEnabled, selectedBlockData, eM, tM, nM, blockDataMap, selectedBlockId, selectedBlockColor, pillarSelectedBlocks, editorUndoStack, sM, oM, createTrackNameUIElement, exitEditor, editorTest, editorPick, editorCopy, editorUndo, editorDeleteSelection, editorSelectPaste, editorSaveTrack, defaultOpenPartsMenu, getBlockEnvironment, mM, gM, setEditorSelectedCategory, setEditorSelectedBlock, editorHeight, blockCount, editorMove, updatePartRotation, playEditorEditSound, getSelectedBlockPosition, getOverlappingBlockData, editorDeleteTiles, editorCameraMovementUpdate, TM, generateBuilding, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
             if ("a" === i && !r)
@@ -35283,6 +35298,10 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         ,
         editorHeight = function() {
             return Math.floor(get(this, BS, "f").position.y / 5)
+        }
+        ,
+        blockCount = function() {
+            return get(this, trackEnvironment, "f").getBlockCount();
         }
         ,
         editorMove = function(e) {
@@ -36569,6 +36588,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     get(this, editorUserCamera, "f").update()),
                     set(this, selectedBlockPosition, get(this, editorFunctionsMap, "m", getSelectedBlockPosition).call(this), "f"),
                     SELECTED_BLOCK_POSITION = get(this, selectedBlockPosition, "f");
+                    TOTAL_BLOCKS = get(this, editorFunctionsMap, "m", blockCount).call(this);
                     const thisEditorHeight = get(this, editorFunctionsMap, "a", editorHeight);
                     get(this, editorHeightSelectorDiv, "f").refresh(thisEditorHeight);
                     
