@@ -28927,10 +28927,12 @@
                         e.model.hasStarted() && e.model.getTime().numberOfFrames < Ch.maxFrames && !e.isPaused && t.push(a(e))
                     }
                 }
-                t.length > 0 && postMessage({
-                    messageType: g_.UpdateResult,
-                    carStates: t
-                }),
+                if (t.length > 0) {
+                    postMessage({
+                        messageType: g_.UpdateResult,
+                        carStates: t
+                    })
+                }
                 requestAnimationFrame(l)
             }
             function c() {

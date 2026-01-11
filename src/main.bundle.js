@@ -2,6 +2,13 @@ const modVersion = "0.1.0";
 var SELECTED_BLOCK_POSITION = null;
 var TOTAL_BLOCKS = 0;
 
+var GLOBAL_CAMERA = null;
+var GLOBAL_VISIBLE_BLOCKS = new Set();
+var DEBUG_INITIALIZED = false;
+
+const CULL_RATE_MS = 50;
+window.DEBUG_ENABLED = false;
+
 ( () => {
     var e = {
         77: (e, t, n) => {
@@ -1686,7 +1693,7 @@ var TOTAL_BLOCKS = 0;
           , he = 1006
           , de = 1007
           , ue = 1008
-          , pe = 1009
+          , UnsignedByteType = 1009
           , fe = 1010
           , me = 1011
           , ge = 1012
@@ -1698,7 +1705,7 @@ var TOTAL_BLOCKS = 0;
           , xe = 1018
           , ke = 1020
           , Ee = 35902
-          , Se = 1023
+          , RGBAFormat = 1023
           , Me = 1026
           , Te = 1027
           , _e = 1028
@@ -1744,7 +1751,7 @@ var TOTAL_BLOCKS = 0;
           , ft = 2402
           , mt = ""
           , gt = "srgb"
-          , vt = "srgb-linear"
+          , LinearSRGBColorSpace = "srgb-linear"
           , wt = "linear"
           , yt = "srgb"
           , At = 7680
@@ -1942,7 +1949,7 @@ var TOTAL_BLOCKS = 0;
                     e.set(l * f, l * p, o * h, o * c);
                     break;
                 default:
-                    console.warn("THREE.MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: " + r)
+                    console.warn("MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: " + r)
                 }
             },
             normalize: Ht,
@@ -2482,7 +2489,7 @@ var TOTAL_BLOCKS = 0;
         function tn() {
             const e = {
                 enabled: !0,
-                workingColorSpace: vt,
+                workingColorSpace: LinearSRGBColorSpace,
                 spaces: {},
                 convert: function(e, t, n) {
                     return !1 !== this.enabled && t !== n && t && n ? (this.spaces[t].transfer === yt && (e.r = rn(e.r),
@@ -2527,7 +2534,7 @@ var TOTAL_BLOCKS = 0;
               , n = [.2126, .7152, .0722]
               , i = [.3127, .329];
             return e.define({
-                [vt]: {
+                [LinearSRGBColorSpace]: {
                     primaries: t,
                     whitePoint: i,
                     transfer: wt,
@@ -2606,7 +2613,7 @@ var TOTAL_BLOCKS = 0;
                         height: e.height
                     }
                 }
-                return console.warn("THREE.ImageUtils.sRGBToLinear(): Unsupported image type. No color space conversion applied."),
+                return console.warn("ImageUtils.sRGBToLinear(): Unsupported image type. No color space conversion applied."),
                 e
             }
         }
@@ -2654,7 +2661,7 @@ var TOTAL_BLOCKS = 0;
                 width: e.width,
                 height: e.height,
                 type: e.data.constructor.name
-            } : (console.warn("THREE.Texture: Unable to serialize Texture."),
+            } : (console.warn("Texture: Unable to serialize Texture."),
             {})
         }
         let dn = 0;
@@ -3526,7 +3533,7 @@ var TOTAL_BLOCKS = 0;
                     this._w = l * c * h + d * u * p;
                     break;
                 default:
-                    console.warn("THREE.Quaternion: .setFromEuler() encountered an unknown order: " + a)
+                    console.warn("Quaternion: .setFromEuler() encountered an unknown order: " + a)
                 }
                 return !0 === t && this._onChangeCallback(),
                 this
@@ -4513,7 +4520,7 @@ var TOTAL_BLOCKS = 0;
           , jn = new Vector3
           , Qn = new Vector3
           , Yn = new Vector3;
-        class Kn {
+        class Ray {
             constructor(e=new Vector3, t=new Vector3(0,0,-1)) {
                 this.origin = e,
                 this.direction = t
@@ -5243,7 +5250,7 @@ var TOTAL_BLOCKS = 0;
                     p = -2 * a * r / (a - r);
                 else {
                     if (s !== Rt)
-                        throw new Error("THREE.Matrix4.makePerspective(): Invalid coordinate system: " + s);
+                        throw new Error("Matrix4.makePerspective(): Invalid coordinate system: " + s);
                     u = -a / (a - r),
                     p = -a * r / (a - r)
                 }
@@ -5278,7 +5285,7 @@ var TOTAL_BLOCKS = 0;
                     f = -2 * h;
                 else {
                     if (s !== Rt)
-                        throw new Error("THREE.Matrix4.makeOrthographic(): Invalid coordinate system: " + s);
+                        throw new Error("Matrix4.makeOrthographic(): Invalid coordinate system: " + s);
                     p = r * h,
                     f = -1 * h
                 }
@@ -5447,7 +5454,7 @@ var TOTAL_BLOCKS = 0;
                     this._y = 0);
                     break;
                 default:
-                    console.warn("THREE.Euler: .setFromRotationMatrix() encountered an unknown order: " + t)
+                    console.warn("Euler: .setFromRotationMatrix() encountered an unknown order: " + t)
                 }
                 return this._order = t,
                 !0 === n && this._onChangeCallback(),
@@ -5699,14 +5706,14 @@ var TOTAL_BLOCKS = 0;
                         this.add(arguments[e]);
                     return this
                 }
-                return e === this ? (console.error("THREE.Object3D.add: object can't be added as a child of itself.", e),
+                return e === this ? (console.error("Object3D.add: object can't be added as a child of itself.", e),
                 this) : (e && e.isObject3D ? (e.removeFromParent(),
                 e.parent = this,
                 this.children.push(e),
                 e.dispatchEvent(wi),
                 Ai.child = e,
                 this.dispatchEvent(Ai),
-                Ai.child = null) : console.error("THREE.Object3D.add: object not an instance of THREE.Object3D.", e),
+                Ai.child = null) : console.error("Object3D.add: object not an instance of Object3D.", e),
                 this)
             }
             remove(e) {
@@ -6406,7 +6413,7 @@ var TOTAL_BLOCKS = 0;
             }
             setStyle(e, t=gt) {
                 function n(t) {
-                    void 0 !== t && parseFloat(t) < 1 && console.warn("THREE.Color: Alpha component of " + e + " will be ignored.")
+                    void 0 !== t && parseFloat(t) < 1 && console.warn("Color: Alpha component of " + e + " will be ignored.")
                 }
                 let i;
                 if (i = /^(\w+)\(([^\)]*)\)/.exec(e)) {
@@ -6430,7 +6437,7 @@ var TOTAL_BLOCKS = 0;
                             this.setHSL(parseFloat(r[1]) / 360, parseFloat(r[2]) / 100, parseFloat(r[3]) / 100, t);
                         break;
                     default:
-                        console.warn("THREE.Color: Unknown color model " + e)
+                        console.warn("Color: Unknown color model " + e)
                     }
                 } else if (i = /^\#([A-Fa-f\d]+)$/.exec(e)) {
                     const n = i[1]
@@ -6439,14 +6446,14 @@ var TOTAL_BLOCKS = 0;
                         return this.setRGB(parseInt(n.charAt(0), 16) / 15, parseInt(n.charAt(1), 16) / 15, parseInt(n.charAt(2), 16) / 15, t);
                     if (6 === r)
                         return this.setHex(parseInt(n, 16), t);
-                    console.warn("THREE.Color: Invalid hex color " + e)
+                    console.warn("Color: Invalid hex color " + e)
                 } else if (e && e.length > 0)
                     return this.setColorName(e, t);
                 return this
             }
             setColorName(e, t=gt) {
                 const n = Ui[e.toLowerCase()];
-                return void 0 !== n ? this.setHex(n, t) : console.warn("THREE.Color: Unknown color " + e),
+                return void 0 !== n ? this.setHex(n, t) : console.warn("Color: Unknown color " + e),
                 this
             }
             clone() {
@@ -6712,11 +6719,11 @@ var TOTAL_BLOCKS = 0;
                     for (const t in e) {
                         const n = e[t];
                         if (void 0 === n) {
-                            console.warn(`THREE.Material: parameter '${t}' has value of undefined.`);
+                            console.warn(`Material: parameter '${t}' has value of undefined.`);
                             continue
                         }
                         const i = this[t];
-                        void 0 !== i ? i && i.isColor ? i.set(n) : i && i.isVector3 && n && n.isVector3 ? i.copy(n) : this[t] = n : console.warn(`THREE.Material: '${t}' is not a property of THREE.${this.type}.`)
+                        void 0 !== i ? i && i.isColor ? i.set(n) : i && i.isVector3 && n && n.isVector3 ? i.copy(n) : this[t] = n : console.warn(`Material: '${t}' is not a property of ${this.type}.`)
                     }
             }
             toJSON(e) {
@@ -6987,7 +6994,7 @@ var TOTAL_BLOCKS = 0;
         class BufferAttribute {
             constructor(e, t, n=!1) {
                 if (Array.isArray(e))
-                    throw new TypeError("THREE.BufferAttribute: array should be a Typed Array.");
+                    throw new TypeError("BufferAttribute: array should be a Typed Array.");
                 this.isBufferAttribute = !0,
                 Object.defineProperty(this, "id", {
                     value: Ki++
@@ -7339,7 +7346,7 @@ var TOTAL_BLOCKS = 0;
                         const n = e[i];
                         t.setXYZ(i, n.x, n.y, n.z || 0)
                     }
-                    e.length > t.count && console.warn("THREE.BufferGeometry: Buffer size too small for points data. Use .dispose() and create a new geometry."),
+                    e.length > t.count && console.warn("BufferGeometry: Buffer size too small for points data. Use .dispose() and create a new geometry."),
                     t.needsUpdate = !0
                 }
                 return this
@@ -7349,7 +7356,7 @@ var TOTAL_BLOCKS = 0;
                 const e = this.attributes.position
                   , t = this.morphAttributes.position;
                 if (e && e.isGLBufferAttribute)
-                    return console.error("THREE.BufferGeometry.computeBoundingBox(): GLBufferAttribute requires a manual bounding box.", this),
+                    return console.error("BufferGeometry.computeBoundingBox(): GLBufferAttribute requires a manual bounding box.", this),
                     void this.boundingBox.set(new Vector3(-1 / 0,-1 / 0,-1 / 0), new Vector3(1 / 0,1 / 0,1 / 0));
                 if (void 0 !== e) {
                     if (this.boundingBox.setFromBufferAttribute(e),
@@ -7365,14 +7372,14 @@ var TOTAL_BLOCKS = 0;
                         }
                 } else
                     this.boundingBox.makeEmpty();
-                (isNaN(this.boundingBox.min.x) || isNaN(this.boundingBox.min.y) || isNaN(this.boundingBox.min.z)) && console.error('THREE.BufferGeometry.computeBoundingBox(): Computed min/max have NaN values. The "position" attribute is likely to have NaN values.', this)
+                (isNaN(this.boundingBox.min.x) || isNaN(this.boundingBox.min.y) || isNaN(this.boundingBox.min.z)) && console.error('BufferGeometry.computeBoundingBox(): Computed min/max have NaN values. The "position" attribute is likely to have NaN values.', this)
             }
             computeBoundingSphere() {
                 null === this.boundingSphere && (this.boundingSphere = new Sphere);
                 const e = this.attributes.position
                   , t = this.morphAttributes.position;
                 if (e && e.isGLBufferAttribute)
-                    return console.error("THREE.BufferGeometry.computeBoundingSphere(): GLBufferAttribute requires a manual bounding sphere.", this),
+                    return console.error("BufferGeometry.computeBoundingSphere(): GLBufferAttribute requires a manual bounding sphere.", this),
                     void this.boundingSphere.set(new Vector3, 1 / 0);
                 if (e) {
                     const n = this.boundingSphere.center;
@@ -7403,14 +7410,14 @@ var TOTAL_BLOCKS = 0;
                                 i = Math.max(i, n.distanceToSquared(ar))
                         }
                     this.boundingSphere.radius = Math.sqrt(i),
-                    isNaN(this.boundingSphere.radius) && console.error('THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The "position" attribute is likely to have NaN values.', this)
+                    isNaN(this.boundingSphere.radius) && console.error('BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The "position" attribute is likely to have NaN values.', this)
                 }
             }
             computeTangents() {
                 const e = this.index
                   , t = this.attributes;
                 if (null === e || void 0 === t.position || void 0 === t.normal || void 0 === t.uv)
-                    return void console.error("THREE.BufferGeometry: .computeTangents() failed. Missing required attributes (index, position, normal or uv)");
+                    return void console.error("BufferGeometry: .computeTangents() failed. Missing required attributes (index, position, normal or uv)");
                 const n = t.position
                   , i = t.normal
                   , r = t.uv;
@@ -7562,7 +7569,7 @@ var TOTAL_BLOCKS = 0;
                     return new BufferAttribute(a,i,r)
                 }
                 if (null === this.index)
-                    return console.warn("THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."),
+                    return console.warn("BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."),
                     this;
                 const t = new BufferGeometry
                   , n = this.index.array
@@ -7719,7 +7726,7 @@ var TOTAL_BLOCKS = 0;
             }
         }
         const or = new Matrix4
-          , lr = new Kn
+          , lr = new Ray
           , cr = new Sphere
           , hr = new Vector3
           , dr = new Vector3
@@ -7892,7 +7899,7 @@ var TOTAL_BLOCKS = 0;
             }
             return h
         }
-        class Ar extends BufferGeometry {
+        class BoxGeometry extends BufferGeometry {
             constructor(e=1, t=1, n=1, i=1, r=1, a=1) {
                 super(),
                 this.type = "BoxGeometry",
@@ -7973,7 +7980,7 @@ var TOTAL_BLOCKS = 0;
                 this
             }
             static fromJSON(e) {
-                return new Ar(e.width,e.height,e.depth,e.widthSegments,e.heightSegments,e.depthSegments)
+                return new BoxGeometry(e.width,e.height,e.depth,e.widthSegments,e.heightSegments,e.depthSegments)
             }
         }
         function br(e) {
@@ -8299,7 +8306,7 @@ var TOTAL_BLOCKS = 0;
                     o.lookAt(0, 0, -1);
                 else {
                     if (e !== Rt)
-                        throw new Error("THREE.CubeCamera.updateCoordinateSystem(): Invalid coordinate system: " + e);
+                        throw new Error("CubeCamera.updateCoordinateSystem(): Invalid coordinate system: " + e);
                     n.up.set(0, -1, 0),
                     n.lookAt(-1, 0, 0),
                     i.up.set(0, -1, 0),
@@ -8391,7 +8398,7 @@ var TOTAL_BLOCKS = 0;
                     vertexShader: "\n\n\t\t\t\tvarying vec3 vWorldDirection;\n\n\t\t\t\tvec3 transformDirection( in vec3 dir, in mat4 matrix ) {\n\n\t\t\t\t\treturn normalize( ( matrix * vec4( dir, 0.0 ) ).xyz );\n\n\t\t\t\t}\n\n\t\t\t\tvoid main() {\n\n\t\t\t\t\tvWorldDirection = transformDirection( position, modelMatrix );\n\n\t\t\t\t\t#include <begin_vertex>\n\t\t\t\t\t#include <project_vertex>\n\n\t\t\t\t}\n\t\t\t",
                     fragmentShader: "\n\n\t\t\t\tuniform sampler2D tEquirect;\n\n\t\t\t\tvarying vec3 vWorldDirection;\n\n\t\t\t\t#include <common>\n\n\t\t\t\tvoid main() {\n\n\t\t\t\t\tvec3 direction = normalize( vWorldDirection );\n\n\t\t\t\t\tvec2 sampleUV = equirectUv( direction );\n\n\t\t\t\t\tgl_FragColor = texture2D( tEquirect, sampleUV );\n\n\t\t\t\t}\n\t\t\t"
                 }
-                  , i = new Ar(5,5,5)
+                  , i = new BoxGeometry(5,5,5)
                   , r = new ShaderMaterial({
                     name: "CubemapFromEquirect",
                     uniforms: br(n.uniforms),
@@ -8821,7 +8828,7 @@ var TOTAL_BLOCKS = 0;
             }
             clone(e) {
                 if (void 0 === e) {
-                    console.log("THREE.InterleavedBufferAttribute.clone(): Cloning an interleaved buffer attribute will de-interleave buffer data.");
+                    console.log("InterleavedBufferAttribute.clone(): Cloning an interleaved buffer attribute will de-interleave buffer data.");
                     const e = [];
                     for (let t = 0; t < this.count; t++) {
                         const n = t * this.data.stride + this.offset;
@@ -8836,7 +8843,7 @@ var TOTAL_BLOCKS = 0;
             }
             toJSON(e) {
                 if (void 0 === e) {
-                    console.log("THREE.InterleavedBufferAttribute.toJSON(): Serializing an interleaved buffer attribute will de-interleave buffer data.");
+                    console.log("InterleavedBufferAttribute.toJSON(): Serializing an interleaved buffer attribute will de-interleave buffer data.");
                     const e = [];
                     for (let t = 0; t < this.count; t++) {
                         const n = t * this.data.stride + this.offset;
@@ -8869,7 +8876,7 @@ var TOTAL_BLOCKS = 0;
           , Kr = new Vector3
           , qr = new Sphere
           , Xr = new Matrix4
-          , Zr = new Kn;
+          , Zr = new Ray;
         class SkinnedMesh extends Mesh {
             constructor(e, t) {
                 super(e, t),
@@ -8947,7 +8954,7 @@ var TOTAL_BLOCKS = 0;
             }
             updateMatrixWorld(e) {
                 super.updateMatrixWorld(e),
-                this.bindMode === J ? this.bindMatrixInverse.copy(this.matrixWorld).invert() : "detached" === this.bindMode ? this.bindMatrixInverse.copy(this.bindMatrix).invert() : console.warn("THREE.SkinnedMesh: Unrecognized bindMode: " + this.bindMode)
+                this.bindMode === J ? this.bindMatrixInverse.copy(this.matrixWorld).invert() : "detached" === this.bindMode ? this.bindMatrixInverse.copy(this.bindMatrix).invert() : console.warn("SkinnedMesh: Unrecognized bindMode: " + this.bindMode)
             }
             applyBoneTransform(e, t) {
                 const n = this.skeleton
@@ -9006,7 +9013,7 @@ var TOTAL_BLOCKS = 0;
                 0 === t.length)
                     this.calculateInverses();
                 else if (e.length !== t.length) {
-                    console.warn("THREE.Skeleton: Number of inverse bone matrices does not match amount of bones."),
+                    console.warn("Skeleton: Number of inverse bone matrices does not match amount of bones."),
                     this.boneInverses = [];
                     for (let e = 0, t = this.bones.length; e < t; e++)
                         this.boneInverses.push(new Matrix4)
@@ -9053,7 +9060,7 @@ var TOTAL_BLOCKS = 0;
                 e = Math.max(e, 4);
                 const t = new Float32Array(e * e * 4);
                 t.set(this.boneMatrices);
-                const n = new DataTexture(t,e,e,Se,ye);
+                const n = new DataTexture(t,e,e,RGBAFormat,ye);
                 return n.needsUpdate = !0,
                 this.boneMatrices = t,
                 this.boneTexture = n,
@@ -9075,7 +9082,7 @@ var TOTAL_BLOCKS = 0;
                 for (let n = 0, i = e.bones.length; n < i; n++) {
                     const i = e.bones[n];
                     let r = t[i];
-                    void 0 === r && (console.warn("THREE.Skeleton: No bone found with UUID:", i),
+                    void 0 === r && (console.warn("Skeleton: No bone found with UUID:", i),
                     r = new Bone),
                     this.bones.push(r),
                     this.boneInverses.push((new Matrix4).fromArray(e.boneInverses[n]))
@@ -9336,7 +9343,7 @@ var TOTAL_BLOCKS = 0;
         }
         const va = new Sphere
           , wa = new Vector3;
-        class ya {
+        class Frustum {
             constructor(e=new Plane, t=new Plane, n=new Plane, i=new Plane, r=new Plane, a=new Plane) {
                 this.planes = [e, t, n, i, r, a]
             }
@@ -9384,7 +9391,7 @@ var TOTAL_BLOCKS = 0;
                     n[5].setComponents(o + s, d + h, m + f, y + w).normalize();
                 else {
                     if (t !== Rt)
-                        throw new Error("THREE.Frustum.setFromProjectionMatrix(): Invalid coordinate system: " + t);
+                        throw new Error("Frustum.setFromProjectionMatrix(): Invalid coordinate system: " + t);
                     n[5].setComponents(s, h, f, w).normalize()
                 }
                 return this
@@ -9466,7 +9473,7 @@ var TOTAL_BLOCKS = 0;
         const ba = new Vector3
           , xa = new Vector3
           , ka = new Matrix4
-          , Ea = new Kn
+          , Ea = new Ray
           , Sa = new Sphere
           , Ma = new Vector3
           , Ta = new Vector3;
@@ -9499,7 +9506,7 @@ var TOTAL_BLOCKS = 0;
                         n[e] += ba.distanceTo(xa);
                     e.setAttribute("lineDistance", new Ji(n,1))
                 } else
-                    console.warn("THREE.Line.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.");
+                    console.warn("Line.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.");
                 return this
             }
             raycast(e, t) {
@@ -9603,7 +9610,7 @@ var TOTAL_BLOCKS = 0;
                         n[e + 1] = n[e] + Pa.distanceTo(Ia);
                     e.setAttribute("lineDistance", new Ji(n,1))
                 } else
-                    console.warn("THREE.LineSegments.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.");
+                    console.warn("LineSegments.computeLineDistances(): Computation only possible with non-indexed BufferGeometry.");
                 return this
             }
         }
@@ -9639,7 +9646,7 @@ var TOTAL_BLOCKS = 0;
             }
         }
         const Na = new Matrix4
-          , Ba = new Kn
+          , Ba = new Ray
           , Ua = new Sphere
           , za = new Vector3;
         class Points extends Object3D {
@@ -9729,7 +9736,7 @@ var TOTAL_BLOCKS = 0;
         class DepthTexture extends Texture {
             constructor(e, t, n, i, r, a, s, o, l, c=1026) {
                 if (c !== Me && c !== Te)
-                    throw new Error("DepthTexture format must be either THREE.DepthFormat or THREE.DepthStencilFormat");
+                    throw new Error("DepthTexture format must be either DepthFormat or DepthStencilFormat");
                 void 0 === n && c === Me && (n = we),
                 void 0 === n && c === Te && (n = ke),
                 super(null, i, r, a, s, o, c, n, l),
@@ -9764,7 +9771,7 @@ var TOTAL_BLOCKS = 0;
                 this.cacheArcLengths = null
             }
             getPoint() {
-                console.warn("THREE.Curve: .getPoint() not implemented.")
+                console.warn("Curve: .getPoint() not implemented.")
             }
             getPointAt(e, t) {
                 const n = this.getUtoTmapping(e);
@@ -11903,9 +11910,9 @@ var TOTAL_BLOCKS = 0;
         class Js {
             constructor(e, t, n, i) {
                 if (void 0 === e)
-                    throw new Error("THREE.KeyframeTrack: track name is undefined");
+                    throw new Error("KeyframeTrack: track name is undefined");
                 if (void 0 === t || 0 === t.length)
-                    throw new Error("THREE.KeyframeTrack: no keyframes in track named " + e);
+                    throw new Error("KeyframeTrack: no keyframes in track named " + e);
                 this.name = e,
                 this.times = Hs(t, this.TimeBufferType),
                 this.values = Hs(n, this.ValueBufferType),
@@ -11956,7 +11963,7 @@ var TOTAL_BLOCKS = 0;
                             throw new Error(t);
                         this.setInterpolation(this.DefaultInterpolation)
                     }
-                    return console.warn("THREE.KeyframeTrack:", t),
+                    return console.warn("KeyframeTrack:", t),
                     this
                 }
                 return this.createInterpolant = t,
@@ -12013,23 +12020,23 @@ var TOTAL_BLOCKS = 0;
             validate() {
                 let e = !0;
                 const t = this.getValueSize();
-                t - Math.floor(t) != 0 && (console.error("THREE.KeyframeTrack: Invalid value size in track.", this),
+                t - Math.floor(t) != 0 && (console.error("KeyframeTrack: Invalid value size in track.", this),
                 e = !1);
                 const n = this.times
                   , i = this.values
                   , r = n.length;
-                0 === r && (console.error("THREE.KeyframeTrack: Track is empty.", this),
+                0 === r && (console.error("KeyframeTrack: Track is empty.", this),
                 e = !1);
                 let a = null;
                 for (let t = 0; t !== r; t++) {
                     const i = n[t];
                     if ("number" == typeof i && isNaN(i)) {
-                        console.error("THREE.KeyframeTrack: Time is not a valid number.", this, t, i),
+                        console.error("KeyframeTrack: Time is not a valid number.", this, t, i),
                         e = !1;
                         break
                     }
                     if (null !== a && a > i) {
-                        console.error("THREE.KeyframeTrack: Out of order keys.", this, t, i, a),
+                        console.error("KeyframeTrack: Out of order keys.", this, t, i, a),
                         e = !1;
                         break
                     }
@@ -12039,7 +12046,7 @@ var TOTAL_BLOCKS = 0;
                     for (let t = 0, n = i.length; t !== n; ++t) {
                         const n = i[t];
                         if (isNaN(n)) {
-                            console.error("THREE.KeyframeTrack: Value is not a valid number.", this, t, n),
+                            console.error("KeyframeTrack: Value is not a valid number.", this, t, n),
                             e = !1;
                             break
                         }
@@ -12237,7 +12244,7 @@ var TOTAL_BLOCKS = 0;
             }
             static parseAnimation(e, t) {
                 if (!e)
-                    return console.error("THREE.AnimationClip: No animation in JSONLoader data."),
+                    return console.error("AnimationClip: No animation in JSONLoader data."),
                     null;
                 const n = function(e, t, n, i, r) {
                     if (0 !== n.length) {
@@ -12322,7 +12329,7 @@ var TOTAL_BLOCKS = 0;
         }
         function oo(e) {
             if (void 0 === e.type)
-                throw new Error("THREE.KeyframeTrack: track type undefined, can not parse");
+                throw new Error("KeyframeTrack: track type undefined, can not parse");
             const t = function(e) {
                 switch (e.toLowerCase()) {
                 case "scalar":
@@ -12346,7 +12353,7 @@ var TOTAL_BLOCKS = 0;
                 case "string":
                     return ro
                 }
-                throw new Error("THREE.KeyframeTrack: Unsupported typeName: " + e)
+                throw new Error("KeyframeTrack: Unsupported typeName: " + e)
             }(e.type);
             if (void 0 === e.times) {
                 const t = []
@@ -12517,7 +12524,7 @@ var TOTAL_BLOCKS = 0;
                   , o = this.responseType;
                 fetch(a).then((t => {
                     if (200 === t.status || 0 === t.status) {
-                        if (0 === t.status && console.warn("THREE.FileLoader: HTTP Status 0 received."),
+                        if (0 === t.status && console.warn("FileLoader: HTTP Status 0 received."),
                         "undefined" == typeof ReadableStream || void 0 === t.body || void 0 === t.body.getReader)
                             return t;
                         const n = po[e]
@@ -12736,7 +12743,7 @@ var TOTAL_BLOCKS = 0;
                 this.matrix = new Matrix4,
                 this.autoUpdate = !0,
                 this.needsUpdate = !1,
-                this._frustum = new ya,
+                this._frustum = new Frustum,
                 this._frameExtents = new Vector2(1,1),
                 this._viewportCount = 1,
                 this._viewports = [new Vector4(0,0,1,1)]
@@ -13019,7 +13026,7 @@ var TOTAL_BLOCKS = 0;
         }
         class Do {
             static decodeText(e) {
-                if (console.warn("THREE.LoaderUtils: decodeText() has been deprecated with r165 and will be removed with r175. Use TextDecoder instead."),
+                if (console.warn("LoaderUtils: decodeText() has been deprecated with r165 and will be removed with r175. Use TextDecoder instead."),
                 "undefined" != typeof TextDecoder)
                     return (new TextDecoder).decode(e);
                 let t = "";
@@ -13044,8 +13051,8 @@ var TOTAL_BLOCKS = 0;
             constructor(e) {
                 super(e),
                 this.isImageBitmapLoader = !0,
-                "undefined" == typeof createImageBitmap && console.warn("THREE.ImageBitmapLoader: createImageBitmap() not supported."),
-                "undefined" == typeof fetch && console.warn("THREE.ImageBitmapLoader: fetch() not supported."),
+                "undefined" == typeof createImageBitmap && console.warn("ImageBitmapLoader: createImageBitmap() not supported."),
+                "undefined" == typeof fetch && console.warn("ImageBitmapLoader: fetch() not supported."),
                 this.options = {
                     premultiplyAlpha: "none"
                 }
@@ -13264,20 +13271,20 @@ var TOTAL_BLOCKS = 0;
                 this.getValue = this._getValue_unavailable,
                 this.setValue = this._setValue_unavailable,
                 !e)
-                    return void console.warn("THREE.PropertyBinding: No target node found for track: " + this.path + ".");
+                    return void console.warn("PropertyBinding: No target node found for track: " + this.path + ".");
                 if (n) {
                     let i = t.objectIndex;
                     switch (n) {
                     case "materials":
                         if (!e.material)
-                            return void console.error("THREE.PropertyBinding: Can not bind to material as node does not have a material.", this);
+                            return void console.error("PropertyBinding: Can not bind to material as node does not have a material.", this);
                         if (!e.material.materials)
-                            return void console.error("THREE.PropertyBinding: Can not bind to material.materials as node.material does not have a materials array.", this);
+                            return void console.error("PropertyBinding: Can not bind to material.materials as node.material does not have a materials array.", this);
                         e = e.material.materials;
                         break;
                     case "bones":
                         if (!e.skeleton)
-                            return void console.error("THREE.PropertyBinding: Can not bind to bones as node does not have a skeleton.", this);
+                            return void console.error("PropertyBinding: Can not bind to bones as node does not have a skeleton.", this);
                         e = e.skeleton.bones;
                         for (let t = 0; t < e.length; t++)
                             if (e[t].name === i) {
@@ -13291,26 +13298,26 @@ var TOTAL_BLOCKS = 0;
                             break
                         }
                         if (!e.material)
-                            return void console.error("THREE.PropertyBinding: Can not bind to material as node does not have a material.", this);
+                            return void console.error("PropertyBinding: Can not bind to material as node does not have a material.", this);
                         if (!e.material.map)
-                            return void console.error("THREE.PropertyBinding: Can not bind to material.map as node.material does not have a map.", this);
+                            return void console.error("PropertyBinding: Can not bind to material.map as node.material does not have a map.", this);
                         e = e.material.map;
                         break;
                     default:
                         if (void 0 === e[n])
-                            return void console.error("THREE.PropertyBinding: Can not bind to objectName of node undefined.", this);
+                            return void console.error("PropertyBinding: Can not bind to objectName of node undefined.", this);
                         e = e[n]
                     }
                     if (void 0 !== i) {
                         if (void 0 === e[i])
-                            return void console.error("THREE.PropertyBinding: Trying to bind to objectIndex of objectName, but is undefined.", this, e);
+                            return void console.error("PropertyBinding: Trying to bind to objectIndex of objectName, but is undefined.", this, e);
                         e = e[i]
                     }
                 }
                 const a = e[i];
                 if (void 0 === a) {
                     const n = t.nodeName;
-                    return void console.error("THREE.PropertyBinding: Trying to update property for track: " + n + "." + i + " but it wasn't found.", e)
+                    return void console.error("PropertyBinding: Trying to update property for track: " + n + "." + i + " but it wasn't found.", e)
                 }
                 let s = this.Versioning.None;
                 this.targetObject = e,
@@ -13319,9 +13326,9 @@ var TOTAL_BLOCKS = 0;
                 if (void 0 !== r) {
                     if ("morphTargetInfluences" === i) {
                         if (!e.geometry)
-                            return void console.error("THREE.PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.", this);
+                            return void console.error("PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.", this);
                         if (!e.geometry.morphAttributes)
-                            return void console.error("THREE.PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.morphAttributes.", this);
+                            return void console.error("PropertyBinding: Can not bind to morphTargetInfluences because node does not have a geometry.morphAttributes.", this);
                         void 0 !== e.morphTargetDictionary[r] && (r = e.morphTargetDictionary[r])
                     }
                     o = this.BindingType.ArrayElement,
@@ -13384,11 +13391,11 @@ var TOTAL_BLOCKS = 0;
         Ho.prototype.SetterByBindingTypeAndVersioning = [[Ho.prototype._setValue_direct, Ho.prototype._setValue_direct_setNeedsUpdate, Ho.prototype._setValue_direct_setMatrixWorldNeedsUpdate], [Ho.prototype._setValue_array, Ho.prototype._setValue_array_setNeedsUpdate, Ho.prototype._setValue_array_setMatrixWorldNeedsUpdate], [Ho.prototype._setValue_arrayElement, Ho.prototype._setValue_arrayElement_setNeedsUpdate, Ho.prototype._setValue_arrayElement_setMatrixWorldNeedsUpdate], [Ho.prototype._setValue_fromArray, Ho.prototype._setValue_fromArray_setNeedsUpdate, Ho.prototype._setValue_fromArray_setMatrixWorldNeedsUpdate]];
         new Float32Array(1);
         const Go = new Matrix4;
-        class jo {
-            constructor(e, t, n=0, i=1 / 0) {
-                this.ray = new Kn(e,t),
-                this.near = n,
-                this.far = i,
+        class Raycaster {
+            constructor(origin, direction, castNearest=0, castFarthest=1 / 0) {
+                this.ray = new Ray(origin,direction),
+                this.near = castNearest,
+                this.far = castFarthest,
                 this.camera = null,
                 this.layers = new Mask,
                 this.params = {
@@ -13411,7 +13418,7 @@ var TOTAL_BLOCKS = 0;
                 this.ray.direction.set(e.x, e.y, .5).unproject(t).sub(this.ray.origin).normalize(),
                 this.camera = t) : t.isOrthographicCamera ? (this.ray.origin.set(e.x, e.y, (t.near + t.far) / (t.near - t.far)).unproject(t),
                 this.ray.direction.set(0, 0, -1).transformDirection(t.matrixWorld),
-                this.camera = t) : console.error("THREE.Raycaster: Unsupported camera type: " + t.type)
+                this.camera = t) : console.error("Raycaster: Unsupported camera type: " + t.type)
             }
             setFromXRController(e) {
                 return Go.identity().extractRotation(e.matrixWorld),
@@ -13419,30 +13426,30 @@ var TOTAL_BLOCKS = 0;
                 this.ray.direction.set(0, 0, -1).applyMatrix4(Go),
                 this
             }
-            intersectObject(e, t=!0, n=[]) {
-                return Yo(e, this, n, t),
-                n.sort(Qo),
-                n
+            intersectObject(object, recursive=true, intersects=[]) {
+                RaycastCheck(object, this, intersects, recursive);
+                intersects.sort(SortByDistance);
+                return intersects;
             }
             intersectObjects(e, t=!0, n=[]) {
                 for (let i = 0, r = e.length; i < r; i++)
-                    Yo(e[i], this, n, t);
-                return n.sort(Qo),
+                    RaycastCheck(e[i], this, n, t);
+                return n.sort(SortByDistance),
                 n
             }
         }
-        function Qo(e, t) {
+        function SortByDistance(e, t) {
             return e.distance - t.distance
         }
-        function Yo(e, t, n, i) {
+        function RaycastCheck(collisionMesh, targetObject, raycastOrigin, isRecursive) {
             let r = !0;
-            if (e.layers.test(t.layers)) {
-                !1 === e.raycast(t, n) && (r = !1)
+            if (collisionMesh.layers.test(targetObject.layers)) {
+                !1 === collisionMesh.raycast(targetObject, raycastOrigin) && (r = !1)
             }
-            if (!0 === r && !0 === i) {
-                const i = e.children;
+            if (!0 === r && !0 === isRecursive) {
+                const i = collisionMesh.children;
                 for (let e = 0, r = i.length; e < r; e++)
-                    Yo(i[e], t, n, !0)
+                    RaycastCheck(i[e], targetObject, raycastOrigin, !0)
             }
         }
         class Ko {
@@ -13648,7 +13655,7 @@ var TOTAL_BLOCKS = 0;
         function Zo(e, t, n, i) {
             const r = function(e) {
                 switch (e) {
-                case pe:
+                case UnsignedByteType:
                 case fe:
                     return {
                         byteLength: 1,
@@ -13696,7 +13703,7 @@ var TOTAL_BLOCKS = 0;
                 return e * t * 2 / r.components * r.byteLength;
             case 1022:
                 return e * t * 3 / r.components * r.byteLength;
-            case Se:
+            case RGBAFormat:
             case Ie:
                 return e * t * 4 / r.components * r.byteLength;
             case Re:
@@ -13987,25 +13994,25 @@ var TOTAL_BLOCKS = 0;
                 const d = e[h];
                 let u = 0;
                 if (n !== (null !== d.index))
-                    return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". All geometries must have compatible attributes; make sure index attribute exists among all geometries, or in none of them."),
+                    return console.error("BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". All geometries must have compatible attributes; make sure index attribute exists among all geometries, or in none of them."),
                     null;
                 for (const e in d.attributes) {
                     if (!i.has(e))
-                        return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + '. All geometries must have compatible attributes; make sure "' + e + '" attribute exists among all geometries, or in none of them.'),
+                        return console.error("BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + '. All geometries must have compatible attributes; make sure "' + e + '" attribute exists among all geometries, or in none of them.'),
                         null;
                     void 0 === a[e] && (a[e] = []),
                     a[e].push(d.attributes[e]),
                     u++
                 }
                 if (u !== i.size)
-                    return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". Make sure all geometries have the same number of attributes."),
+                    return console.error("BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". Make sure all geometries have the same number of attributes."),
                     null;
                 if (o !== d.morphTargetsRelative)
-                    return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". .morphTargetsRelative must be consistent throughout all geometries."),
+                    return console.error("BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". .morphTargetsRelative must be consistent throughout all geometries."),
                     null;
                 for (const e in d.morphAttributes) {
                     if (!r.has(e))
-                        return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ".  .morphAttributes must be consistent throughout all geometries."),
+                        return console.error("BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ".  .morphAttributes must be consistent throughout all geometries."),
                         null;
                     void 0 === s[e] && (s[e] = []),
                     s[e].push(d.morphAttributes[e])
@@ -14016,7 +14023,7 @@ var TOTAL_BLOCKS = 0;
                         e = d.index.count;
                     else {
                         if (void 0 === d.attributes.position)
-                            return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". The geometry must have either an index or a position attribute"),
+                            return console.error("BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + h + ". The geometry must have either an index or a position attribute"),
                             null;
                         e = d.attributes.position.count
                     }
@@ -14038,7 +14045,7 @@ var TOTAL_BLOCKS = 0;
             for (const e in a) {
                 const t = fl(a[e]);
                 if (!t)
-                    return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + e + " attribute."),
+                    return console.error("BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + e + " attribute."),
                     null;
                 l.setAttribute(e, t)
             }
@@ -14054,7 +14061,7 @@ var TOTAL_BLOCKS = 0;
                         t.push(s[e][i][n]);
                     const i = fl(t);
                     if (!i)
-                        return console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + e + " morphAttribute."),
+                        return console.error("BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + e + " morphAttribute."),
                         null;
                     l.morphAttributes[e].push(i)
                 }
@@ -14067,19 +14074,19 @@ var TOTAL_BLOCKS = 0;
                 const o = e[s];
                 if (void 0 === t && (t = o.array.constructor),
                 t !== o.array.constructor)
-                    return console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.array must be of consistent array types across matching attributes."),
+                    return console.error("BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.array must be of consistent array types across matching attributes."),
                     null;
                 if (void 0 === n && (n = o.itemSize),
                 n !== o.itemSize)
-                    return console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.itemSize must be consistent across matching attributes."),
+                    return console.error("BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.itemSize must be consistent across matching attributes."),
                     null;
                 if (void 0 === i && (i = o.normalized),
                 i !== o.normalized)
-                    return console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.normalized must be consistent across matching attributes."),
+                    return console.error("BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.normalized must be consistent across matching attributes."),
                     null;
                 if (-1 === r && (r = o.gpuType),
                 r !== o.gpuType)
-                    return console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.gpuType must be consistent across matching attributes."),
+                    return console.error("BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.gpuType must be consistent across matching attributes."),
                     null;
                 a += o.count * n
             }
@@ -14180,7 +14187,7 @@ var TOTAL_BLOCKS = 0;
         }
         function gl(e, t) {
             if (0 === t)
-                return console.warn("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Geometry already defined as triangles."),
+                return console.warn("BufferGeometryUtils.toTrianglesDrawMode(): Geometry already defined as triangles."),
                 e;
             if (2 === t || 1 === t) {
                 let n = e.getIndex();
@@ -14188,7 +14195,7 @@ var TOTAL_BLOCKS = 0;
                     const t = []
                       , i = e.getAttribute("position");
                     if (void 0 === i)
-                        return console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Undefined position attribute. Processing not possible."),
+                        return console.error("BufferGeometryUtils.toTrianglesDrawMode(): Undefined position attribute. Processing not possible."),
                         e;
                     for (let e = 0; e < i.count; e++)
                         t.push(e);
@@ -14209,13 +14216,13 @@ var TOTAL_BLOCKS = 0;
                         r.push(n.getX(e + 2))) : (r.push(n.getX(e + 2)),
                         r.push(n.getX(e + 1)),
                         r.push(n.getX(e)));
-                r.length / 3 !== i && console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unable to generate correct amount of triangles.");
+                r.length / 3 !== i && console.error("BufferGeometryUtils.toTrianglesDrawMode(): Unable to generate correct amount of triangles.");
                 const a = e.clone();
                 return a.setIndex(r),
                 a.clearGroups(),
                 a
             }
-            return console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unknown draw mode:", t),
+            return console.error("BufferGeometryUtils.toTrianglesDrawMode(): Unknown draw mode:", t),
             e
         }
         class vl extends uo {
@@ -14368,7 +14375,7 @@ var TOTAL_BLOCKS = 0;
                 } else
                     r = e;
                 if (void 0 === r.asset || r.asset.version[0] < 2)
-                    return void (i && i(new Error("THREE.GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported.")));
+                    return void (i && i(new Error("GLTFLoader: Unsupported asset. glTF versions >=2.0 are supported.")));
                 const l = new uc(r,{
                     path: t || this.resourcePath || "",
                     crossOrigin: this.crossOrigin,
@@ -14380,7 +14387,7 @@ var TOTAL_BLOCKS = 0;
                 l.fileLoader.setRequestHeader(this.requestHeader);
                 for (let e = 0; e < this.pluginCallbacks.length; e++) {
                     const t = this.pluginCallbacks[e](l);
-                    t.name || console.error("THREE.GLTFLoader: Invalid plugin found: missing name"),
+                    t.name || console.error("GLTFLoader: Invalid plugin found: missing name"),
                     s[t.name] = t,
                     a[t.name] = !0
                 }
@@ -14402,7 +14409,7 @@ var TOTAL_BLOCKS = 0;
                             a[t] = new Gl;
                             break;
                         default:
-                            n.indexOf(t) >= 0 && void 0 === s[t] && console.warn('THREE.GLTFLoader: Unknown extension "' + t + '".')
+                            n.indexOf(t) >= 0 && void 0 === s[t] && console.warn('GLTFLoader: Unknown extension "' + t + '".')
                         }
                     }
                 l.setExtensions(a),
@@ -14485,7 +14492,7 @@ var TOTAL_BLOCKS = 0;
                   , a = ((r.extensions && r.extensions[this.name] || {}).lights || [])[e];
                 let s;
                 const o = new Color(16777215);
-                void 0 !== a.color && o.setRGB(a.color[0], a.color[1], a.color[2], vt);
+                void 0 !== a.color && o.setRGB(a.color[0], a.color[1], a.color[2], LinearSRGBColorSpace);
                 const l = void 0 !== a.range ? a.range : 0;
                 switch (a.type) {
                 case "directional":
@@ -14509,7 +14516,7 @@ var TOTAL_BLOCKS = 0;
                     s.add(s.target);
                     break;
                 default:
-                    throw new Error("THREE.GLTFLoader: Unexpected light type: " + a.type)
+                    throw new Error("GLTFLoader: Unexpected light type: " + a.type)
                 }
                 return s.position.set(0, 0, 0),
                 sc(s, a),
@@ -14549,7 +14556,7 @@ var TOTAL_BLOCKS = 0;
                 if (r) {
                     if (Array.isArray(r.baseColorFactor)) {
                         const t = r.baseColorFactor;
-                        e.color.setRGB(t[0], t[1], t[2], vt),
+                        e.color.setRGB(t[0], t[1], t[2], LinearSRGBColorSpace),
                         e.opacity = t[3]
                     }
                     void 0 !== r.baseColorTexture && i.push(n.assignTexture(e, "map", r.baseColorTexture, gt))
@@ -14664,7 +14671,7 @@ var TOTAL_BLOCKS = 0;
                 const a = i.extensions[this.name];
                 if (void 0 !== a.sheenColorFactor) {
                     const e = a.sheenColorFactor;
-                    t.sheenColor.setRGB(e[0], e[1], e[2], vt)
+                    t.sheenColor.setRGB(e[0], e[1], e[2], LinearSRGBColorSpace)
                 }
                 return void 0 !== a.sheenRoughnessFactor && (t.sheenRoughness = a.sheenRoughnessFactor),
                 void 0 !== a.sheenColorTexture && r.push(n.assignTexture(t, "sheenColorMap", a.sheenColorTexture, gt)),
@@ -14713,7 +14720,7 @@ var TOTAL_BLOCKS = 0;
                 void 0 !== a.thicknessTexture && r.push(n.assignTexture(t, "thicknessMap", a.thicknessTexture)),
                 t.attenuationDistance = a.attenuationDistance || 1 / 0;
                 const s = a.attenuationColor || [1, 1, 1];
-                return t.attenuationColor = (new Color).setRGB(s[0], s[1], s[2], vt),
+                return t.attenuationColor = (new Color).setRGB(s[0], s[1], s[2], LinearSRGBColorSpace),
                 Promise.all(r)
             }
         }
@@ -14754,7 +14761,7 @@ var TOTAL_BLOCKS = 0;
                 t.specularIntensity = void 0 !== a.specularFactor ? a.specularFactor : 1,
                 void 0 !== a.specularTexture && r.push(n.assignTexture(t, "specularIntensityMap", a.specularTexture));
                 const s = a.specularColorFactor || [1, 1, 1];
-                return t.specularColor = (new Color).setRGB(s[0], s[1], s[2], vt),
+                return t.specularColor = (new Color).setRGB(s[0], s[1], s[2], LinearSRGBColorSpace),
                 void 0 !== a.specularColorTexture && r.push(n.assignTexture(t, "specularColorMap", a.specularColorTexture, gt)),
                 Promise.all(r)
             }
@@ -14817,7 +14824,7 @@ var TOTAL_BLOCKS = 0;
                   , a = t.options.ktx2Loader;
                 if (!a) {
                     if (n.extensionsRequired && n.extensionsRequired.indexOf(this.name) >= 0)
-                        throw new Error("THREE.GLTFLoader: setKTX2Loader must be called before loading KTX2 textures");
+                        throw new Error("GLTFLoader: setKTX2Loader must be called before loading KTX2 textures");
                     return null
                 }
                 return t.loadTextureImage(e, r.source, a)
@@ -14847,7 +14854,7 @@ var TOTAL_BLOCKS = 0;
                     if (r)
                         return n.loadTextureImage(e, a.source, o);
                     if (i.extensionsRequired && i.extensionsRequired.indexOf(t) >= 0)
-                        throw new Error("THREE.GLTFLoader: WebP required by asset but unsupported.");
+                        throw new Error("GLTFLoader: WebP required by asset but unsupported.");
                     return n.loadTexture(e)
                 }
                 ))
@@ -14888,7 +14895,7 @@ var TOTAL_BLOCKS = 0;
                     if (r)
                         return n.loadTextureImage(e, a.source, o);
                     if (i.extensionsRequired && i.extensionsRequired.indexOf(t) >= 0)
-                        throw new Error("THREE.GLTFLoader: AVIF required by asset but unsupported.");
+                        throw new Error("GLTFLoader: AVIF required by asset but unsupported.");
                     return n.loadTexture(e)
                 }
                 ))
@@ -14919,7 +14926,7 @@ var TOTAL_BLOCKS = 0;
                       , r = this.parser.options.meshoptDecoder;
                     if (!r || !r.supported) {
                         if (t.extensionsRequired && t.extensionsRequired.indexOf(this.name) >= 0)
-                            throw new Error("THREE.GLTFLoader: setMeshoptDecoder must be called before loading compressed files");
+                            throw new Error("GLTFLoader: setMeshoptDecoder must be called before loading compressed files");
                         return null
                     }
                     return i.then((function(t) {
@@ -15013,9 +15020,9 @@ var TOTAL_BLOCKS = 0;
                     length: t.getUint32(8, !0)
                 },
                 this.header.magic !== zl)
-                    throw new Error("THREE.GLTFLoader: Unsupported glTF-Binary header.");
+                    throw new Error("GLTFLoader: Unsupported glTF-Binary header.");
                 if (this.header.version < 2)
-                    throw new Error("THREE.GLTFLoader: Legacy binary file detected.");
+                    throw new Error("GLTFLoader: Legacy binary file detected.");
                 const i = this.header.length - 12
                   , r = new DataView(e,12);
                 let a = 0;
@@ -15034,13 +15041,13 @@ var TOTAL_BLOCKS = 0;
                     a += t
                 }
                 if (null === this.content)
-                    throw new Error("THREE.GLTFLoader: JSON content not found.")
+                    throw new Error("GLTFLoader: JSON content not found.")
             }
         }
         class Vl {
             constructor(e, t) {
                 if (!t)
-                    throw new Error("THREE.GLTFLoader: No DRACOLoader instance provided.");
+                    throw new Error("GLTFLoader: No DRACOLoader instance provided.");
                 this.name = yl.KHR_DRACO_MESH_COMPRESSION,
                 this.json = e,
                 this.dracoLoader = t,
@@ -15077,7 +15084,7 @@ var TOTAL_BLOCKS = 0;
                             }
                             t(e)
                         }
-                        ), s, l, vt, n)
+                        ), s, l, LinearSRGBColorSpace, n)
                     }
                     ))
                 }
@@ -15232,7 +15239,7 @@ var TOTAL_BLOCKS = 0;
                 t.userData.gltfExtensions[i] = n.extensions[i])
         }
         function sc(e, t) {
-            void 0 !== t.extras && ("object" == typeof t.extras ? Object.assign(e.userData, t.extras) : console.warn("THREE.GLTFLoader: Ignoring primitive type .extras, " + t.extras))
+            void 0 !== t.extras && ("object" == typeof t.extras ? Object.assign(e.userData, t.extras) : console.warn("GLTFLoader: Ignoring primitive type .extras, " + t.extras))
         }
         function oc(e, t) {
             if (e.updateMorphTargets(),
@@ -15246,7 +15253,7 @@ var TOTAL_BLOCKS = 0;
                     for (let t = 0, i = n.length; t < i; t++)
                         e.morphTargetDictionary[n[t]] = t
                 } else
-                    console.warn("THREE.GLTFLoader: Invalid extras.targetNames length. Ignoring names.")
+                    console.warn("GLTFLoader: Invalid extras.targetNames length. Ignoring names.")
             }
         }
         function lc(e) {
@@ -15276,7 +15283,7 @@ var TOTAL_BLOCKS = 0;
             case Uint16Array:
                 return 1 / 65535;
             default:
-                throw new Error("THREE.GLTFLoader: Unsupported normalized accessor component type.")
+                throw new Error("GLTFLoader: Unsupported normalized accessor component type.")
             }
         }
         const dc = new Matrix4;
@@ -15510,13 +15517,13 @@ var TOTAL_BLOCKS = 0;
                 const t = this.json.buffers[e]
                   , n = this.fileLoader;
                 if (t.type && "arraybuffer" !== t.type)
-                    throw new Error("THREE.GLTFLoader: " + t.type + " buffer type is not supported.");
+                    throw new Error("GLTFLoader: " + t.type + " buffer type is not supported.");
                 if (void 0 === t.uri && 0 === e)
                     return Promise.resolve(this.extensions[yl.KHR_BINARY_GLTF].body);
                 const i = this.options;
                 return new Promise((function(e, r) {
                     n.load(Do.resolveURL(t.uri, i.path), e, void 0, (function() {
-                        r(new Error('THREE.GLTFLoader: Failed to load buffer "' + t.uri + '".'))
+                        r(new Error('GLTFLoader: Failed to load buffer "' + t.uri + '".'))
                     }
                     ))
                 }
@@ -15583,7 +15590,7 @@ var TOTAL_BLOCKS = 0;
                             a >= 3 && p.setZ(t, h[e * a + 2]),
                             a >= 4 && p.setW(t, h[e * a + 3]),
                             a >= 5)
-                                throw new Error("THREE.GLTFLoader: Unsupported itemSize in sparse BufferAttribute.")
+                                throw new Error("GLTFLoader: Unsupported itemSize in sparse BufferAttribute.")
                         }
                         p.normalized = d
                     }
@@ -15654,7 +15661,7 @@ var TOTAL_BLOCKS = 0;
                     }
                     ));
                 else if (void 0 === a.uri)
-                    throw new Error("THREE.GLTFLoader: Image " + e + " is missing URI and bufferView");
+                    throw new Error("GLTFLoader: Image " + e + " is missing URI and bufferView");
                 const c = Promise.resolve(o).then((function(e) {
                     return new Promise((function(n, i) {
                         let a = n;
@@ -15676,7 +15683,7 @@ var TOTAL_BLOCKS = 0;
                     e
                 }
                 )).catch((function(e) {
-                    throw console.error("THREE.GLTFLoader: Couldn't load texture", o),
+                    throw console.error("GLTFLoader: Couldn't load texture", o),
                     e
                 }
                 ));
@@ -15767,7 +15774,7 @@ var TOTAL_BLOCKS = 0;
                     s.opacity = 1,
                     Array.isArray(n.baseColorFactor)) {
                         const e = n.baseColorFactor;
-                        s.color.setRGB(e[0], e[1], e[2], vt),
+                        s.color.setRGB(e[0], e[1], e[2], LinearSRGBColorSpace),
                         s.opacity = e[3]
                     }
                     void 0 !== n.baseColorTexture && o.push(t.assignTexture(s, "map", n.baseColorTexture, gt)),
@@ -15799,7 +15806,7 @@ var TOTAL_BLOCKS = 0;
                 void 0 !== r.occlusionTexture.strength && (s.aoMapIntensity = r.occlusionTexture.strength)),
                 void 0 !== r.emissiveFactor && a !== MeshBasicMaterial) {
                     const e = r.emissiveFactor;
-                    s.emissive = (new Color).setRGB(e[0], e[1], e[2], vt)
+                    s.emissive = (new Color).setRGB(e[0], e[1], e[2], LinearSRGBColorSpace)
                 }
                 return void 0 !== r.emissiveTexture && a !== MeshBasicMaterial && o.push(t.assignTexture(s, "emissiveMap", r.emissiveTexture, gt)),
                 Promise.all(o).then((function() {
@@ -15891,7 +15898,7 @@ var TOTAL_BLOCKS = 0;
                             d = new LineLoop(c,u);
                         else {
                             if (h.mode !== Kl.POINTS)
-                                throw new Error("THREE.GLTFLoader: Primitive mode unsupported: " + h.mode);
+                                throw new Error("GLTFLoader: Primitive mode unsupported: " + h.mode);
                             d = new Points(c,u)
                         }
                         Object.keys(d.geometry.morphAttributes).length > 0 && oc(d, r),
@@ -15929,7 +15936,7 @@ var TOTAL_BLOCKS = 0;
                     n.name && (t.name = this.createUniqueName(n.name)),
                     sc(t, n),
                     Promise.resolve(t);
-                console.warn("THREE.GLTFLoader: Missing camera parameters.")
+                console.warn("GLTFLoader: Missing camera parameters.")
             }
             loadSkin(e) {
                 const t = this.json.skins[e]
@@ -15950,7 +15957,7 @@ var TOTAL_BLOCKS = 0;
                             null !== n && t.fromArray(n.array, 16 * e),
                             a.push(t)
                         } else
-                            console.warn('THREE.GLTFLoader: Joint "%s" could not be found.', t.joints[e])
+                            console.warn('GLTFLoader: Joint "%s" could not be found.', t.joints[e])
                     }
                     return new ia(r,a)
                 }
@@ -16198,7 +16205,7 @@ var TOTAL_BLOCKS = 0;
                 ));
                 r.push(i)
             }
-            return nn.workingColorSpace !== vt && "COLOR_0"in i && console.warn(`THREE.GLTFLoader: Converting vertex colors from "srgb-linear" to "${nn.workingColorSpace}" not supported.`),
+            return nn.workingColorSpace !== LinearSRGBColorSpace && "COLOR_0"in i && console.warn(`GLTFLoader: Converting vertex colors from "srgb-linear" to "${nn.workingColorSpace}" not supported.`),
             sc(e, t),
             function(e, t, n) {
                 const i = t.attributes
@@ -16210,7 +16217,7 @@ var TOTAL_BLOCKS = 0;
                       , t = e.min
                       , a = e.max;
                     if (void 0 === t || void 0 === a)
-                        return void console.warn("THREE.GLTFLoader: Missing min/max properties for accessor POSITION.");
+                        return void console.warn("GLTFLoader: Missing min/max properties for accessor POSITION.");
                     if (r.set(new Vector3(t[0],t[1],t[2]), new Vector3(a[0],a[1],a[2])),
                     e.normalized) {
                         const t = hc(ql[e.componentType]);
@@ -16238,7 +16245,7 @@ var TOTAL_BLOCKS = 0;
                                 }
                                 e.max(t)
                             } else
-                                console.warn("THREE.GLTFLoader: Missing min/max properties for accessor POSITION.")
+                                console.warn("GLTFLoader: Missing min/max properties for accessor POSITION.")
                         }
                     }
                     r.expandByVector(e)
@@ -16379,7 +16386,7 @@ var TOTAL_BLOCKS = 0;
                                 o = e.UNSIGNED_BYTE;
                             else {
                                 if (!(i instanceof Uint8ClampedArray))
-                                    throw new Error("THREE.WebGLAttributes: Unsupported buffer data format: " + i);
+                                    throw new Error("WebGLAttributes: Unsupported buffer data format: " + i);
                                 o = e.UNSIGNED_BYTE
                             }
                             return {
@@ -16392,7 +16399,7 @@ var TOTAL_BLOCKS = 0;
                         }(n, i));
                     else if (r.version < n.version) {
                         if (r.size !== n.array.byteLength)
-                            throw new Error("THREE.WebGLAttributes: The size of the buffer attribute's array buffer does not match the original size. Resizing buffer attributes is not supported.");
+                            throw new Error("WebGLAttributes: The size of the buffer attribute's array buffer does not match the original size. Resizing buffer attributes is not supported.");
                         !function(t, n, i) {
                             const r = n.array
                               , a = n.updateRanges;
@@ -17271,7 +17278,7 @@ var TOTAL_BLOCKS = 0;
                 },
                 addToRenderList: function(t, n) {
                     const i = f(n);
-                    i && (i.isCubeTexture || i.mapping === ie) ? (void 0 === c && (c = new Mesh(new Ar(1,1,1),new ShaderMaterial({
+                    i && (i.isCubeTexture || i.mapping === ie) ? (void 0 === c && (c = new Mesh(new BoxGeometry(1,1,1),new ShaderMaterial({
                         name: "BackgroundCubeMaterial",
                         uniforms: br(wc.backgroundCube.uniforms),
                         vertexShader: wc.backgroundCube.vertexShader,
@@ -17653,7 +17660,7 @@ var TOTAL_BLOCKS = 0;
             }
             let s = void 0 !== n.precision ? n.precision : "highp";
             const o = a(s);
-            o !== s && (console.warn("THREE.WebGLRenderer:", s, "not supported, using", o, "instead."),
+            o !== s && (console.warn("WebGLRenderer:", s, "not supported, using", o, "instead."),
             s = o);
             const l = !0 === n.logarithmicDepthBuffer
               , c = !0 === n.reverseDepthBuffer && t.has("EXT_clip_control")
@@ -17673,11 +17680,11 @@ var TOTAL_BLOCKS = 0;
                 },
                 getMaxPrecision: a,
                 textureFormatReadable: function(t) {
-                    return t === Se || i.convert(t) === e.getParameter(e.IMPLEMENTATION_COLOR_READ_FORMAT)
+                    return t === RGBAFormat || i.convert(t) === e.getParameter(e.IMPLEMENTATION_COLOR_READ_FORMAT)
                 },
                 textureTypeReadable: function(n) {
                     const r = n === Ae && (t.has("EXT_color_buffer_half_float") || t.has("EXT_color_buffer_float"));
-                    return !(n !== pe && i.convert(n) !== e.getParameter(e.IMPLEMENTATION_COLOR_READ_TYPE) && n !== ye && !r)
+                    return !(n !== UnsignedByteType && i.convert(n) !== e.getParameter(e.IMPLEMENTATION_COLOR_READ_TYPE) && n !== ye && !r)
                 },
                 precision: s,
                 logarithmicDepthBuffer: l,
@@ -17917,8 +17924,8 @@ var TOTAL_BLOCKS = 0;
                     minFilter: he,
                     generateMipmaps: !1,
                     type: Ae,
-                    format: Se,
-                    colorSpace: vt,
+                    format: RGBAFormat,
+                    colorSpace: LinearSRGBColorSpace,
                     depthBuffer: !1
                 }
                   , i = Wc(e, t, n);
@@ -18037,7 +18044,7 @@ var TOTAL_BLOCKS = 0;
                     depthWrite: !1,
                     depthTest: !1
                 })
-                  , u = new Mesh(new Ar,d);
+                  , u = new Mesh(new BoxGeometry,d);
                 let p = !1;
                 const f = e.background;
                 f ? f.isColor && (d.color.copy(f),
@@ -18269,7 +18276,7 @@ var TOTAL_BLOCKS = 0;
                 },
                 get: function(e) {
                     const t = n(e);
-                    return null === t && Jt("THREE.WebGLRenderer: " + e + " extension not supported."),
+                    return null === t && Jt("WebGLRenderer: " + e + " extension not supported."),
                     t
                 }
             }
@@ -18436,7 +18443,7 @@ var TOTAL_BLOCKS = 0;
                         t.points += r * n;
                         break;
                     default:
-                        console.error("THREE.WebGLInfo: Unknown draw mode:", i)
+                        console.error("WebGLInfo: Unknown draw mode:", i)
                     }
                 }
             }
@@ -19160,7 +19167,7 @@ var TOTAL_BLOCKS = 0;
                 case yt:
                     return [t, "sRGBTransferOETF"];
                 default:
-                    return console.warn("THREE.WebGLProgram: Unsupported color space: ", e),
+                    return console.warn("WebGLProgram: Unsupported color space: ", e),
                     [t, "LinearTransferOETF"]
                 }
             }(t);
@@ -19191,7 +19198,7 @@ var TOTAL_BLOCKS = 0;
                 n = "Custom";
                 break;
             default:
-                console.warn("THREE.WebGLProgram: Unsupported toneMapping:", t),
+                console.warn("WebGLProgram: Unsupported toneMapping:", t),
                 n = "Linear"
             }
             return "vec3 " + e + "( vec3 color ) { return " + n + "ToneMapping( color ); }"
@@ -19223,7 +19230,7 @@ var TOTAL_BLOCKS = 0;
                 if (void 0 === e)
                     throw new Error("Can not resolve #include <" + t + ">");
                 n = gc[e],
-                console.warn('THREE.WebGLRenderer: Shader chunk "%s" has been deprecated. Use "%s" instead.', t, e)
+                console.warn('WebGLRenderer: Shader chunk "%s" has been deprecated. Use "%s" instead.', t, e)
             }
             return gd(n)
         }
@@ -19344,10 +19351,10 @@ var TOTAL_BLOCKS = 0;
                         else {
                             const e = od(r, b, "vertex")
                               , i = od(r, x, "fragment");
-                            console.error("THREE.WebGLProgram: Shader Error " + r.getError() + " - VALIDATE_STATUS " + r.getProgramParameter(m, r.VALIDATE_STATUS) + "\n\nMaterial Name: " + t.name + "\nMaterial Type: " + t.type + "\n\nProgram Info Log: " + n + "\n" + e + "\n" + i)
+                            console.error("WebGLProgram: Shader Error " + r.getError() + " - VALIDATE_STATUS " + r.getProgramParameter(m, r.VALIDATE_STATUS) + "\n\nMaterial Name: " + t.name + "\nMaterial Type: " + t.type + "\n\nProgram Info Log: " + n + "\n" + e + "\n" + i)
                         }
                     else
-                        "" !== n ? console.warn("THREE.WebGLProgram: Program Info Log:", n) : "" !== i && "" !== a || (o = !1);
+                        "" !== n ? console.warn("WebGLProgram: Program Info Log:", n) : "" !== i && "" !== a || (o = !1);
                     o && (t.diagnostics = {
                         runnable: s,
                         programLog: n,
@@ -19516,7 +19523,7 @@ var TOTAL_BLOCKS = 0;
                       , x = b && b.mapping === ie ? b.image.height : null
                       , k = f[a.type];
                     null !== a.precision && (p = r.getMaxPrecision(a.precision),
-                    p !== a.precision && console.warn("THREE.WebGLProgram.getParameters:", a.precision, "not supported, using", p, "instead."));
+                    p !== a.precision && console.warn("WebGLProgram.getParameters:", a.precision, "not supported, using", p, "instead."));
                     const E = y.morphAttributes.position || y.morphAttributes.normal || y.morphAttributes.color
                       , S = void 0 !== E ? E.length : 0;
                     let M, T, _, C, P = 0;
@@ -19592,7 +19599,7 @@ var TOTAL_BLOCKS = 0;
                         instancingColor: L && null !== v.instanceColor,
                         instancingMorph: L && null !== v.morphTexture,
                         supportsVertexTextures: u,
-                        outputColorSpace: null === I ? e.outputColorSpace : !0 === I.isXRRenderTarget ? I.texture.colorSpace : vt,
+                        outputColorSpace: null === I ? e.outputColorSpace : !0 === I.isXRRenderTarget ? I.texture.colorSpace : LinearSRGBColorSpace,
                         alphaToCoverage: !!a.alphaToCoverage,
                         map: N,
                         matcap: B,
@@ -20361,8 +20368,8 @@ var TOTAL_BLOCKS = 0;
                 }
             }
         }
-        function Od(e, t, n) {
-            let i = new ya;
+        function RenderShadowMap(e, t, n) {
+            let i = new Frustum;
             const r = new Vector2
               , a = new Vector2
               , s = new Vector4
@@ -20525,7 +20532,7 @@ var TOTAL_BLOCKS = 0;
                     const c = t[l]
                       , d = c.shadow;
                     if (void 0 === d) {
-                        console.warn("THREE.WebGLShadowMap:", c, "has no shadow.");
+                        console.warn("WebGLShadowMap:", c, "has no shadow.");
                         continue
                     }
                     if (!1 === d.autoUpdate && !1 === d.needsUpdate)
@@ -20866,7 +20873,7 @@ var TOTAL_BLOCKS = 0;
                                 e.blendFuncSeparate(e.ZERO, e.SRC_COLOR, e.ZERO, e.SRC_ALPHA);
                                 break;
                             default:
-                                console.error("THREE.WebGLState: Invalid blending: ", t)
+                                console.error("WebGLState: Invalid blending: ", t)
                             }
                         else
                             switch (t) {
@@ -20883,7 +20890,7 @@ var TOTAL_BLOCKS = 0;
                                 e.blendFunc(e.ZERO, e.SRC_COLOR);
                                 break;
                             default:
-                                console.error("THREE.WebGLState: Invalid blending: ", t)
+                                console.error("WebGLState: Invalid blending: ", t)
                             }
                         m = null,
                         g = null,
@@ -21010,28 +21017,28 @@ var TOTAL_BLOCKS = 0;
                     try {
                         e.compressedTexImage2D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 compressedTexImage3D: function() {
                     try {
                         e.compressedTexImage3D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 texImage2D: function() {
                     try {
                         e.texImage2D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 texImage3D: function() {
                     try {
                         e.texImage3D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 updateUBOMapping: function(t, n) {
@@ -21051,42 +21058,42 @@ var TOTAL_BLOCKS = 0;
                     try {
                         e.texStorage2D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 texStorage3D: function() {
                     try {
                         e.texStorage3D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 texSubImage2D: function() {
                     try {
                         e.texSubImage2D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 texSubImage3D: function() {
                     try {
                         e.texSubImage3D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 compressedTexSubImage2D: function() {
                     try {
                         e.compressedTexSubImage2D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 compressedTexSubImage3D: function() {
                     try {
                         e.compressedTexSubImage3D(...arguments)
                     } catch (e) {
-                        console.error("THREE.WebGLState:", e)
+                        console.error("WebGLState:", e)
                     }
                 },
                 scissor: function(t) {
@@ -21188,10 +21195,10 @@ var TOTAL_BLOCKS = 0;
                         s.width = n,
                         s.height = a;
                         return s.getContext("2d").drawImage(e, 0, 0, n, a),
-                        console.warn("THREE.WebGLRenderer: Texture has been resized from (" + r.width + "x" + r.height + ") to (" + n + "x" + a + ")."),
+                        console.warn("WebGLRenderer: Texture has been resized from (" + r.width + "x" + r.height + ") to (" + n + "x" + a + ")."),
                         s
                     }
-                    return "data"in e && console.warn("THREE.WebGLRenderer: Image in DataTexture is too big (" + r.width + "x" + r.height + ")."),
+                    return "data"in e && console.warn("WebGLRenderer: Image in DataTexture is too big (" + r.width + "x" + r.height + ")."),
                     e
                 }
                 return e
@@ -21209,7 +21216,7 @@ var TOTAL_BLOCKS = 0;
                 if (null !== n) {
                     if (void 0 !== e[n])
                         return e[n];
-                    console.warn("THREE.WebGLRenderer: Attempt to use non-existing WebGL internal format '" + n + "'")
+                    console.warn("WebGLRenderer: Attempt to use non-existing WebGL internal format '" + n + "'")
                 }
                 let o = i;
                 if (i === e.RED && (r === e.FLOAT && (o = e.R32F),
@@ -21339,11 +21346,11 @@ var TOTAL_BLOCKS = 0;
                 !1 === t.isRenderTargetTexture && t.version > 0 && a.__version !== t.version) {
                     const e = t.image;
                     if (null === e)
-                        console.warn("THREE.WebGLRenderer: Texture marked for update but no image data found.");
+                        console.warn("WebGLRenderer: Texture marked for update but no image data found.");
                     else {
                         if (!1 !== e.complete)
                             return void R(a, t, r);
-                        console.warn("THREE.WebGLRenderer: Texture marked for update but image is incomplete")
+                        console.warn("WebGLRenderer: Texture marked for update but image is incomplete")
                     }
                 }
                 n.bindTexture(e.TEXTURE_2D, a.__webglTexture, e.TEXTURE0 + r)
@@ -21372,7 +21379,7 @@ var TOTAL_BLOCKS = 0;
                 [Mt]: e.NOTEQUAL
             };
             function P(n, a) {
-                if (a.type !== ye || !1 !== t.has("OES_texture_float_linear") || a.magFilter !== he && a.magFilter !== de && a.magFilter !== ce && a.magFilter !== ue && a.minFilter !== he && a.minFilter !== de && a.minFilter !== ce && a.minFilter !== ue || console.warn("THREE.WebGLRenderer: Unable to use linear filtering with floating point textures. OES_texture_float_linear not supported on this device."),
+                if (a.type !== ye || !1 !== t.has("OES_texture_float_linear") || a.magFilter !== he && a.magFilter !== de && a.magFilter !== ce && a.magFilter !== ue && a.minFilter !== he && a.minFilter !== de && a.minFilter !== ce && a.minFilter !== ue || console.warn("WebGLRenderer: Unable to use linear filtering with floating point textures. OES_texture_float_linear not supported on this device."),
                 e.texParameteri(n, e.TEXTURE_WRAP_S, T[a.wrapS]),
                 e.texParameteri(n, e.TEXTURE_WRAP_T, T[a.wrapT]),
                 n !== e.TEXTURE_3D && n !== e.TEXTURE_2D_ARRAY || e.texParameteri(n, e.TEXTURE_WRAP_R, T[a.wrapR]),
@@ -21482,7 +21489,7 @@ var TOTAL_BLOCKS = 0;
                             S && M && n.texStorage3D(e.TEXTURE_2D_ARRAY, _, k, E[0].width, E[0].height, p.depth);
                             for (let t = 0, i = E.length; t < i; t++)
                                 if (x = E[t],
-                                s.format !== Se)
+                                s.format !== RGBAFormat)
                                     if (null !== f)
                                         if (S) {
                                             if (T)
@@ -21498,14 +21505,14 @@ var TOTAL_BLOCKS = 0;
                                         } else
                                             n.compressedTexImage3D(e.TEXTURE_2D_ARRAY, t, k, x.width, x.height, p.depth, 0, x.data, 0, 0);
                                     else
-                                        console.warn("THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()");
+                                        console.warn("WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()");
                                 else
                                     S ? T && n.texSubImage3D(e.TEXTURE_2D_ARRAY, t, 0, 0, 0, x.width, x.height, p.depth, f, w, x.data) : n.texImage3D(e.TEXTURE_2D_ARRAY, t, k, x.width, x.height, p.depth, 0, f, w, x.data)
                         } else {
                             S && M && n.texStorage2D(e.TEXTURE_2D, _, k, E[0].width, E[0].height);
                             for (let t = 0, i = E.length; t < i; t++)
                                 x = E[t],
-                                s.format !== Se ? null !== f ? S ? T && n.compressedTexSubImage2D(e.TEXTURE_2D, t, 0, 0, x.width, x.height, f, x.data) : n.compressedTexImage2D(e.TEXTURE_2D, t, k, x.width, x.height, 0, x.data) : console.warn("THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()") : S ? T && n.texSubImage2D(e.TEXTURE_2D, t, 0, 0, x.width, x.height, f, w, x.data) : n.texImage2D(e.TEXTURE_2D, t, k, x.width, x.height, 0, f, w, x.data)
+                                s.format !== RGBAFormat ? null !== f ? S ? T && n.compressedTexSubImage2D(e.TEXTURE_2D, t, 0, 0, x.width, x.height, f, x.data) : n.compressedTexImage2D(e.TEXTURE_2D, t, k, x.width, x.height, 0, x.data) : console.warn("WebGLRenderer: Attempt to load unsupported compressed texture format in .uploadTexture()") : S ? T && n.texSubImage2D(e.TEXTURE_2D, t, 0, 0, x.width, x.height, f, w, x.data) : n.texImage2D(e.TEXTURE_2D, t, k, x.width, x.height, 0, f, w, x.data)
                         }
                     else if (s.isDataArrayTexture)
                         if (S) {
@@ -21625,7 +21632,7 @@ var TOTAL_BLOCKS = 0;
                             throw new Error("Depth Texture with cube render targets is not supported");
                         if (n.bindFramebuffer(e.FRAMEBUFFER, t),
                         !r.depthTexture || !r.depthTexture.isDepthTexture)
-                            throw new Error("renderTarget.depthTexture must be an instance of THREE.DepthTexture");
+                            throw new Error("renderTarget.depthTexture must be an instance of DepthTexture");
                         const a = i.get(r.depthTexture);
                         a.__renderTarget = r,
                         a.__webglTexture && r.depthTexture.image.width === r.width && r.depthTexture.image.height === r.height || (r.depthTexture.image.width = r.width,
@@ -21680,7 +21687,7 @@ var TOTAL_BLOCKS = 0;
                 const n = e.colorSpace
                   , i = e.format
                   , r = e.type;
-                return !0 === e.isCompressedTexture || !0 === e.isVideoTexture || n !== vt && n !== mt && (nn.getTransfer(n) === yt ? i === Se && r === pe || console.warn("THREE.WebGLTextures: sRGB encoded textures have to use RGBAFormat and UnsignedByteType.") : console.error("THREE.WebGLTextures: Unsupported texture color space:", n)),
+                return !0 === e.isCompressedTexture || !0 === e.isVideoTexture || n !== LinearSRGBColorSpace && n !== mt && (nn.getTransfer(n) === yt ? i === RGBAFormat && r === UnsignedByteType || console.warn("WebGLTextures: sRGB encoded textures have to use RGBAFormat and UnsignedByteType.") : console.error("WebGLTextures: Unsupported texture color space:", n)),
                 t
             }
             function W(e) {
@@ -21692,7 +21699,7 @@ var TOTAL_BLOCKS = 0;
             }
             this.allocateTextureUnit = function() {
                 const e = S;
-                return e >= r.maxTextures && console.warn("THREE.WebGLTextures: Trying to use " + e + " texture units while this GPU supports only " + r.maxTextures),
+                return e >= r.maxTextures && console.warn("WebGLTextures: Trying to use " + e + " texture units while this GPU supports only " + r.maxTextures),
                 S += 1,
                 e
             }
@@ -21751,7 +21758,7 @@ var TOTAL_BLOCKS = 0;
                                 T = f[t].mipmaps;
                                 for (let i = 0; i < T.length; i++) {
                                     const r = T[i];
-                                    s.format !== Se ? null !== A ? E ? M && n.compressedTexSubImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, 0, 0, r.width, r.height, A, r.data) : n.compressedTexImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, k, r.width, r.height, 0, r.data) : console.warn("THREE.WebGLRenderer: Attempt to load unsupported compressed texture format in .setTextureCube()") : E ? M && n.texSubImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, 0, 0, r.width, r.height, A, x, r.data) : n.texImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, k, r.width, r.height, 0, A, x, r.data)
+                                    s.format !== RGBAFormat ? null !== A ? E ? M && n.compressedTexSubImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, 0, 0, r.width, r.height, A, r.data) : n.compressedTexImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, k, r.width, r.height, 0, r.data) : console.warn("WebGLRenderer: Attempt to load unsupported compressed texture format in .setTextureCube()") : E ? M && n.texSubImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, 0, 0, r.width, r.height, A, x, r.data) : n.texImage2D(e.TEXTURE_CUBE_MAP_POSITIVE_X + t, i, k, r.width, r.height, 0, A, x, r.data)
                                 }
                             }
                         } else {
@@ -21956,7 +21963,7 @@ var TOTAL_BLOCKS = 0;
                 convert: function(n, i="") {
                     let r;
                     const a = nn.getTransfer(i);
-                    if (n === pe)
+                    if (n === UnsignedByteType)
                         return e.UNSIGNED_BYTE;
                     if (n === be)
                         return e.UNSIGNED_SHORT_4_4_4_4;
@@ -21982,7 +21989,7 @@ var TOTAL_BLOCKS = 0;
                         return e.ALPHA;
                     if (1022 === n)
                         return e.RGB;
-                    if (n === Se)
+                    if (n === RGBAFormat)
                         return e.RGBA;
                     if (1024 === n)
                         return e.LUMINANCE;
@@ -22286,12 +22293,12 @@ var TOTAL_BLOCKS = 0;
                 ,
                 this.setFramebufferScaleFactor = function(e) {
                     r = e,
-                    !0 === n.isPresenting && console.warn("THREE.WebXRManager: Cannot change framebuffer scale while presenting.")
+                    !0 === n.isPresenting && console.warn("WebXRManager: Cannot change framebuffer scale while presenting.")
                 }
                 ,
                 this.setReferenceSpaceType = function(e) {
                     s = e,
-                    !0 === n.isPresenting && console.warn("THREE.WebXRManager: Cannot change reference space type while presenting.")
+                    !0 === n.isPresenting && console.warn("WebXRManager: Cannot change reference space type while presenting.")
                 }
                 ,
                 this.getReferenceSpace = function() {
@@ -22353,8 +22360,8 @@ var TOTAL_BLOCKS = 0;
                             e.setPixelRatio(1),
                             e.setSize(d.textureWidth, d.textureHeight, !1),
                             v = new WebGLRenderTarget(d.textureWidth,d.textureHeight,{
-                                format: Se,
-                                type: pe,
+                                format: RGBAFormat,
+                                type: UnsignedByteType,
                                 depthTexture: new DepthTexture(d.textureWidth,d.textureHeight,a,void 0,void 0,void 0,void 0,void 0,void 0,n),
                                 stencilBuffer: m.stencil,
                                 colorSpace: e.outputColorSpace,
@@ -22377,8 +22384,8 @@ var TOTAL_BLOCKS = 0;
                             e.setPixelRatio(1),
                             e.setSize(u.framebufferWidth, u.framebufferHeight, !1),
                             v = new WebGLRenderTarget(u.framebufferWidth,u.framebufferHeight,{
-                                format: Se,
-                                type: pe,
+                                format: RGBAFormat,
+                                type: UnsignedByteType,
                                 colorSpace: e.outputColorSpace,
                                 stencilBuffer: m.stencil,
                                 resolveDepthBuffer: !1 === u.ignoreDepthValues,
@@ -22771,7 +22778,7 @@ var TOTAL_BLOCKS = 0;
                 t.storage = 12) : e.isVector4 ? (t.boundary = 16,
                 t.storage = 16) : e.isMatrix3 ? (t.boundary = 48,
                 t.storage = 48) : e.isMatrix4 ? (t.boundary = 64,
-                t.storage = 64) : e.isTexture ? console.warn("THREE.WebGLRenderer: Texture samplers can not be part of an uniforms group.") : console.warn("THREE.WebGLRenderer: Unsupported uniform value type.", e),
+                t.storage = 64) : e.isTexture ? console.warn("WebGLRenderer: Texture samplers can not be part of an uniforms group.") : console.warn("WebGLRenderer: Unsupported uniform value type.", e),
                 t
             }
             function h(t) {
@@ -22823,7 +22830,7 @@ var TOTAL_BLOCKS = 0;
                                 if (-1 === s.indexOf(e))
                                     return s.push(e),
                                     e;
-                            return console.error("THREE.WebGLRenderer: Maximum number of simultaneously usable uniforms groups reached."),
+                            return console.error("WebGLRenderer: Maximum number of simultaneously usable uniforms groups reached."),
                             0
                         }();
                         t.__bindingPointIndex = n;
@@ -22896,7 +22903,7 @@ var TOTAL_BLOCKS = 0;
                 if (this.isWebGLRenderer = !0,
                 null !== n) {
                     if ("undefined" != typeof WebGLRenderingContext && n instanceof WebGLRenderingContext)
-                        throw new Error("THREE.WebGLRenderer: WebGL 1 is not supported since r163.");
+                        throw new Error("WebGLRenderer: WebGL 1 is not supported since r163.");
                     u = n.getContextAttributes().alpha
                 } else
                     u = a;
@@ -22941,7 +22948,7 @@ var TOTAL_BLOCKS = 0;
                 const U = new Vector4(0,0,R,L)
                   , z = new Vector4(0,0,R,L);
                 let O = !1;
-                const F = new ya;
+                const F = new Frustum;
                 let W = !1
                   , V = !1;
                 this.transmissionResolutionScale = 1;
@@ -22986,7 +22993,7 @@ var TOTAL_BLOCKS = 0;
                             throw Re(t) ? new Error("Error creating WebGL context with your selected attributes.") : new Error("Error creating WebGL context.")
                     }
                 } catch (e) {
-                    throw console.error("THREE.WebGLRenderer: " + e.message),
+                    throw console.error("WebGLRenderer: " + e.message),
                     e
                 }
                 function Le() {
@@ -23012,7 +23019,7 @@ var TOTAL_BLOCKS = 0;
                     ce = new Rd,
                     he = new zd(X),
                     me = new xc(A,ne,ie,J,se,u,o),
-                    fe = new Od(A,se,Z),
+                    fe = new RenderShadowMap(A,se,Z),
                     Te = new qd(_e,$,Z,J),
                     ye = new Ec(_e,X,$),
                     Ee = new qc(_e,X,$),
@@ -23029,11 +23036,11 @@ var TOTAL_BLOCKS = 0;
                 const De = new jd(A,_e);
                 function Ne(e) {
                     e.preventDefault(),
-                    console.log("THREE.WebGLRenderer: Context Lost."),
+                    console.log("WebGLRenderer: Context Lost."),
                     b = !0
                 }
                 function Be() {
-                    console.log("THREE.WebGLRenderer: Context Restored."),
+                    console.log("WebGLRenderer: Context Restored."),
                     b = !1;
                     const e = $.autoReset
                       , t = fe.enabled
@@ -23048,7 +23055,7 @@ var TOTAL_BLOCKS = 0;
                     fe.type = r
                 }
                 function Ue(e) {
-                    console.error("THREE.WebGLRenderer: A WebGL context could not be created. Reason: ", e.statusMessage)
+                    console.error("WebGLRenderer: A WebGL context could not be created. Reason: ", e.statusMessage)
                 }
                 function ze(e) {
                     const t = e.target;
@@ -23108,7 +23115,7 @@ var TOTAL_BLOCKS = 0;
                 }
                 ,
                 this.setSize = function(e, n, i=!0) {
-                    De.isPresenting ? console.warn("THREE.WebGLRenderer: Can't change size while VR device is presenting.") : (R = e,
+                    De.isPresenting ? console.warn("WebGLRenderer: Can't change size while VR device is presenting.") : (R = e,
                     L = n,
                     t.width = Math.floor(e * D),
                     t.height = Math.floor(n * D),
@@ -23194,7 +23201,7 @@ var TOTAL_BLOCKS = 0;
                         }
                         if (e) {
                             const e = E.texture.type
-                              , t = e === pe || e === we || e === ge || e === ke || e === be || e === xe
+                              , t = e === UnsignedByteType || e === we || e === ge || e === ke || e === be || e === xe
                               , n = me.getClearColor()
                               , i = me.getClearAlpha()
                               , r = n.r
@@ -23258,7 +23265,7 @@ var TOTAL_BLOCKS = 0;
                         te.resetTextureUnits();
                         const a = t.fog
                           , s = i.isMeshStandardMaterial ? t.environment : null
-                          , o = null === E ? A.outputColorSpace : !0 === E.isXRRenderTarget ? E.texture.colorSpace : vt
+                          , o = null === E ? A.outputColorSpace : !0 === E.isXRRenderTarget ? E.texture.colorSpace : LinearSRGBColorSpace
                           , l = (i.isMeshStandardMaterial ? ie : ne).get(i.envMap || s)
                           , c = !0 === i.vertexColors && !!n.attributes.color && 4 === n.attributes.color.itemSize
                           , h = !!n.attributes.tangent && (!!i.normalMap || i.anisotropy > 0)
@@ -23406,7 +23413,7 @@ var TOTAL_BLOCKS = 0;
                         r.isPoints ? g.setMode(_e.POINTS) : r.isSprite && g.setMode(_e.TRIANGLES);
                     if (r.isBatchedMesh)
                         if (null !== r._multiDrawInstances)
-                            Jt("THREE.WebGLRenderer: renderMultiDrawInstances has been deprecated and will be removed in r184. Append to renderMultiDraw arguments and use indirection."),
+                            Jt("WebGLRenderer: renderMultiDrawInstances has been deprecated and will be removed in r184. Append to renderMultiDraw arguments and use indirection."),
                             g.renderMultiDrawInstances(r._multiDrawStarts, r._multiDrawCounts, r._multiDrawCount, r._multiDrawInstances);
                         else if (X.get("WEBGL_multi_draw"))
                             g.renderMultiDraw(r._multiDrawStarts, r._multiDrawCounts, r._multiDrawCount);
@@ -23549,7 +23556,7 @@ var TOTAL_BLOCKS = 0;
                         return;
                     void 0 === v.state.transmissionRenderTarget[i.id] && (v.state.transmissionRenderTarget[i.id] = new WebGLRenderTarget(1,1,{
                         generateMipmaps: !0,
-                        type: X.has("EXT_color_buffer_half_float") || X.has("EXT_color_buffer_float") ? Ae : pe,
+                        type: X.has("EXT_color_buffer_half_float") || X.has("EXT_color_buffer_float") ? Ae : UnsignedByteType,
                         minFilter: ue,
                         samples: 4,
                         stencilBuffer: r,
@@ -23725,7 +23732,7 @@ var TOTAL_BLOCKS = 0;
                 De.addEventListener("sessionend", Ve),
                 this.render = function(e, t) {
                     if (void 0 !== t && !0 !== t.isCamera)
-                        return void console.error("THREE.WebGLRenderer.render: camera is not an instance of THREE.Camera.");
+                        return void console.error("WebGLRenderer.render: camera is not an instance of Camera.");
                     if (!0 === b)
                         return;
                     if (!0 === e.matrixWorldAutoUpdate && e.updateMatrixWorld(),
@@ -23807,7 +23814,7 @@ var TOTAL_BLOCKS = 0;
                     const i = ee.get(e);
                     i.__hasExternalTextures = !0,
                     i.__autoAllocateDepthBuffer = void 0 === n,
-                    i.__autoAllocateDepthBuffer || !0 === X.has("WEBGL_multisampled_render_to_texture") && (console.warn("THREE.WebGLRenderer: Render-to-texture extension was disabled because an external texture was provided"),
+                    i.__autoAllocateDepthBuffer || !0 === X.has("WEBGL_multisampled_render_to_texture") && (console.warn("WebGLRenderer: Render-to-texture extension was disabled because an external texture was provided"),
                     i.__useRenderToTexture = !1)
                 }
                 ,
@@ -23876,7 +23883,7 @@ var TOTAL_BLOCKS = 0;
                 ,
                 this.readRenderTargetPixels = function(e, t, n, i, r, a, s) {
                     if (!e || !e.isWebGLRenderTarget)
-                        return void console.error("THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not THREE.WebGLRenderTarget.");
+                        return void console.error("WebGLRenderer.readRenderTargetPixels: renderTarget is not WebGLRenderTarget.");
                     let o = ee.get(e).__webglFramebuffer;
                     if (e.isWebGLCubeRenderTarget && void 0 !== s && (o = o[s]),
                     o) {
@@ -23886,9 +23893,9 @@ var TOTAL_BLOCKS = 0;
                               , o = s.format
                               , l = s.type;
                             if (!Z.textureFormatReadable(o))
-                                return void console.error("THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in RGBA or implementation defined format.");
+                                return void console.error("WebGLRenderer.readRenderTargetPixels: renderTarget is not in RGBA or implementation defined format.");
                             if (!Z.textureTypeReadable(l))
-                                return void console.error("THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in UnsignedByteType or implementation defined type.");
+                                return void console.error("WebGLRenderer.readRenderTargetPixels: renderTarget is not in UnsignedByteType or implementation defined type.");
                             t >= 0 && t <= e.width - i && n >= 0 && n <= e.height - r && _e.readPixels(t, n, i, r, Se.convert(o), Se.convert(l), a)
                         } finally {
                             const e = null !== E ? ee.get(E).__webglFramebuffer : null;
@@ -23899,7 +23906,7 @@ var TOTAL_BLOCKS = 0;
                 ,
                 this.readRenderTargetPixelsAsync = async function(e, t, n, i, r, a, s) {
                     if (!e || !e.isWebGLRenderTarget)
-                        throw new Error("THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not THREE.WebGLRenderTarget.");
+                        throw new Error("WebGLRenderer.readRenderTargetPixels: renderTarget is not WebGLRenderTarget.");
                     let o = ee.get(e).__webglFramebuffer;
                     if (e.isWebGLCubeRenderTarget && void 0 !== s && (o = o[s]),
                     o) {
@@ -23907,9 +23914,9 @@ var TOTAL_BLOCKS = 0;
                           , l = s.format
                           , c = s.type;
                         if (!Z.textureFormatReadable(l))
-                            throw new Error("THREE.WebGLRenderer.readRenderTargetPixelsAsync: renderTarget is not in RGBA or implementation defined format.");
+                            throw new Error("WebGLRenderer.readRenderTargetPixelsAsync: renderTarget is not in RGBA or implementation defined format.");
                         if (!Z.textureTypeReadable(c))
-                            throw new Error("THREE.WebGLRenderer.readRenderTargetPixelsAsync: renderTarget is not in UnsignedByteType or implementation defined type.");
+                            throw new Error("WebGLRenderer.readRenderTargetPixelsAsync: renderTarget is not in UnsignedByteType or implementation defined type.");
                         if (t >= 0 && t <= e.width - i && n >= 0 && n <= e.height - r) {
                             J.bindFramebuffer(_e.FRAMEBUFFER, o);
                             const e = _e.createBuffer();
@@ -23944,7 +23951,7 @@ var TOTAL_BLOCKS = 0;
                             _e.deleteSync(h),
                             a
                         }
-                        throw new Error("THREE.WebGLRenderer.readRenderTargetPixelsAsync: requested read bounds are out of range.")
+                        throw new Error("WebGLRenderer.readRenderTargetPixelsAsync: requested read bounds are out of range.")
                     }
                 }
                 ,
@@ -24174,7 +24181,7 @@ var TOTAL_BLOCKS = 0;
                     canvas: e,
                     alpha: i
                 }), "f"),
-                get(this, lu, "f").outputColorSpace = vt,
+                get(this, lu, "f").outputColorSpace = LinearSRGBColorSpace,
                 get(this, lu, "f").shadowMap.enabled = !0,
                 get(this, lu, "f").debug.checkShaderErrors = $d,
                 set(this, cu, new Scene, "f"),
@@ -24204,6 +24211,9 @@ var TOTAL_BLOCKS = 0;
             }
             clear() {
                 get(this, lu, "f").clear()
+            }
+            get renderer() {
+                return get(this, lu, "f")
             }
             update(e, t) {
                 var n, i, r;
@@ -24249,6 +24259,7 @@ var TOTAL_BLOCKS = 0;
                 t >= 0 && get(this, pu, "f").splice(t, 1)
             }
             setCamera(e) {
+                GLOBAL_CAMERA = e;
                 set(this, hu, e, "f")
             }
             get camera() {
@@ -24650,7 +24661,8 @@ var TOTAL_BLOCKS = 0;
         dp = new WeakMap,
         ep = new WeakSet,
         pp = function(e, t, n, i) {
-            const r = new jo(e,t,n,i)
+            // console.log(e, t, n, i, get(this, rp, "f"), get(this, ip, "f"));
+            const r = new Raycaster(e,t,n,i)
               , a = get(this, rp, "f").shortRaycast(r);
             if (null != a)
                 return a;
@@ -27732,7 +27744,7 @@ var TOTAL_BLOCKS = 0;
                 throw new TypeError("Cannot read private member from an object whose class did not declare it");
             return "m" === n ? i : "a" === n ? i.call(e) : i ? i.value : t.get(e)
         };
-        class yw {
+        class CarPhysics {
             constructor(e, t, n, i, r, a, s, o, l) {
                 var c;
                 if (hv.add(this),
@@ -27946,7 +27958,9 @@ var TOTAL_BLOCKS = 0;
                     };
                     //null === (t = get(this, kv, "f")) || void 0 === t || t.controlCar(get(this, Sv, "f").id, e.up, e.right, e.down, e.left, e.reset)
                 }
-                ), "f")))
+                ), "f")));
+
+                this.lastCulledFrame = 0;
             }
             dispose() {
                 var e, t, n;
@@ -28107,6 +28121,24 @@ var TOTAL_BLOCKS = 0;
                     get(this, Uv, "f").matrix.multiply((new Matrix4).makeTranslation(0, dv.massOffset, 0)),
                     get(this, zv, "f").matrixAutoUpdate = !1,
                     get(this, zv, "f").matrix.copy(get(this, Uv, "f").matrix);
+                    
+                    const frames = this.getTime().numberOfFrames;
+                    if (this.hasStarted() && (frames - this.lastCulledFrame > CULL_RATE_MS)) {
+                        this.lastCulledFrame = frames;
+                        const visibleBlocks = get(this, Qv, "f").getVisibleBlocks(GLOBAL_CAMERA);
+                        // const ray = new Raycaster(new Vector3(3, 3, 4), new Vector3(3, 3, 4));
+                        // console.log(get(this, Qv, "f").shortRaycast(ray));
+                        let addedBlocks = 0;
+                        for (const block of visibleBlocks) {
+                            if (GLOBAL_VISIBLE_BLOCKS.has(block))
+                                continue;
+                            addedBlocks++;
+                            GLOBAL_VISIBLE_BLOCKS.add(block);
+                        }
+                        if (addedBlocks > 0)
+                            console.log("Added", addedBlocks, "blocks");
+                    }
+
                     const a = 4;
                     for (let t = 0; t < a; t++) {
                         const i = get(this, Sv, "f").wheelInContact[t]
@@ -28240,7 +28272,7 @@ var TOTAL_BLOCKS = 0;
                 ))
             }
         }
-        dv = yw,
+        dv = CarPhysics,
         uv = new WeakMap,
         pv = new WeakMap,
         fv = new WeakMap,
@@ -28587,14 +28619,14 @@ var TOTAL_BLOCKS = 0;
             ))
         }
         ,
-        yw.massOffset = .6,
-        yw.detectorBoxCenter = new Vector3(0,.48,-.15),
-        yw.detectorBoxSize = new Vector3(.89,.22,1.8),
-        yw.suspensionResetLengthFront = .07809501004219055,
-        yw.suspensionResetLengthRear = .0781289680480957,
-        yw.models = null,
-        yw.images = null;
-        const Aw = yw;
+        CarPhysics.massOffset = .6,
+        CarPhysics.detectorBoxCenter = new Vector3(0,.48,-.15),
+        CarPhysics.detectorBoxSize = new Vector3(.89,.22,1.8),
+        CarPhysics.suspensionResetLengthFront = .07809501004219055,
+        CarPhysics.suspensionResetLengthRear = .0781289680480957,
+        CarPhysics.models = null,
+        CarPhysics.images = null;
+        const CarPhysics2 = CarPhysics;
         var bw = n(5959)
           , xw = {};
         xw.styleTagTransform = u(),
@@ -28613,7 +28645,7 @@ var TOTAL_BLOCKS = 0;
           , Sw = {
             type: "end"
         }
-          , Mw = new Kn
+          , Mw = new Ray
           , Tw = new Plane
           , _w = Math.cos(70 * Gt.DEG2RAD)
           , Cw = new Vector3
@@ -29961,7 +29993,7 @@ var TOTAL_BLOCKS = 0;
                 const d = t.getStartTransform();
                 if (null == d)
                     throw new Error("Start transform is null");
-                set(this, hA, new Aw(null,d,null,null,r,a,n,t,o), "f"),
+                set(this, hA, new CarPhysics2(null,d,null,null,r,a,n,t,o), "f"),
                 get(this, hA, "f").audioVolume = 0,
                 get(this, hA, "f").update(0),
                 set(this, cA, new Xy(get(this, hA, "f"),e,r,a,l,s,c,h), "f"),
@@ -30135,7 +30167,7 @@ var TOTAL_BLOCKS = 0;
         function IA(e, t, n, i, r) {
             const a = r.glyphs[e] || r.glyphs["?"];
             if (!a)
-                return void console.error('THREE.Font: character "' + e + '" does not exists in font family ' + r.familyName + ".");
+                return void console.error('Font: character "' + e + '" does not exists in font family ' + r.familyName + ".");
             const s = new qo;
             let o, l, c, h, d, u, p, f;
             if (a.o) {
@@ -32070,7 +32102,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
         }
         ;
-        var Mb, Tb, _b, Cb, Pb, Ib, Rb, Lb, Db, Nb, Bb, Ub, zb, Ob, Fb, set = function(e, t, n, i, r) {
+        var Mb, Tb, _b, Cb, Pb, TrackPartArray, Rb, Lb, Db, Nb, Bb, Ub, zb, Ob, Fb, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
             if ("a" === i && !r)
@@ -32086,7 +32118,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 throw new TypeError("Cannot read private member from an object whose class did not declare it");
             return "m" === n ? i : "a" === n ? i.call(e) : i ? i.value : t.get(e)
         };
-        class Hb {
+        class BlockData {
             constructor(e, t, n, i, r, a, s, o, l, c) {
                 if (this.checkpointOrder = null,
                 this.startOrder = null,
@@ -32111,7 +32143,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     throw new Error("Non-start part has start order")
             }
         }
-        class Gb {
+        class TrackPartManager {
             constructor(e, t, n) {
                 Mb.add(this),
                 Tb.set(this, void 0),
@@ -32119,7 +32151,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 Cb.set(this, void 0),
                 this.environment = Environment.Summer,
                 Pb.set(this, new SunDirection),
-                Ib.set(this, []),
+                TrackPartArray.set(this, []),
                 Rb.set(this, new Map),
                 Lb.set(this, new Map),
                 Db.set(this, {
@@ -32143,7 +32175,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
             clear() {
                 set(this, Nb, null, "f"),
-                get(this, Ib, "f").length = 0,
+                get(this, TrackPartArray, "f").length = 0,
                 get(this, Rb, "f").clear(),
                 get(this, Lb, "f").clear(),
                 get(this, Mb, "m", Ub).call(this)
@@ -32163,19 +32195,19 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     startOrder: e.startOrder
                 }}))
             }
-            setPart(e, t, n, i, r, a, s, o, l) {
+            setPart(positionX, positionY, positionZ, i, r, a, blockColor, o, l) {
                 const c = get(this, Cb, "f").getPart(i);
-                if (s != Environment2.Default && !c.colors.has(s))
-                    s = Environment2.Default;
+                if (blockColor != Environment2.Default && !c.colors.has(blockColor))
+                    blockColor = Environment2.Default;
 
                 const h = rotationAndAxisToQuaternion(r, a)
-                  , d = new Vector3(e * Gb.partSize,t * Gb.partSize,n * Gb.partSize)
+                  , d = new Vector3(positionX * TrackPartManager.partSize,positionY * TrackPartManager.partSize,positionZ * TrackPartManager.partSize)
                   , u = (new Matrix4).compose(d, h, new Vector3(1,1,1))
-                  , p = new Hb(e,t,n,r,a,s,c,u,o,l);
+                  , p = new BlockData(positionX,positionY,positionZ,r,a,blockColor,c,u,o,l);
                 let belowGround = false;
                 c.configuration.tiles.rotated(r, a).forEach(( (i, r, a) => {
-                    const s = (e + i).toString() + "|" + (t + r).toString() + "|" + (n + a).toString();
-                    if (t + r < 0) {
+                    const s = (positionX + i).toString() + "|" + (positionY + r).toString() + "|" + (positionZ + a).toString();
+                    if (positionY + r < 0) {
                         belowGround = true;
                         return;
                     }
@@ -32189,9 +32221,19 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     console.warn("Part placed below ground, ignoring placement.");
                     return;
                 }
-                get(this, Ib, "f").push(p);
+                get(this, TrackPartArray, "f").push(p);
                 const f = get(this, Lb, "f").get(i);
                 null == f ? get(this, Lb, "f").set(i, [p]) : f.push(p);
+            }
+            addPartsFromBlockArray(blockArray) {
+                // this.setPart(block.x, block.y, block.z, block.type.configuration.id, block.rotation, block.rotationAxis, block.color, block.checkpointOrder, block.startOrder);
+                
+                for (let block of blockArray) {
+                    get(this, TrackPartArray, "f").push(block);
+                    const f = get(this, Lb, "f").get(block.type.configuration.id);
+                    null == f ? get(this, Lb, "f").set(block.type.configuration.id, [block]) : f.push(block);
+                }
+                this.generateMeshes();
             }
             deletePartsAt(e, t, n) {
                 const i = get(this, Rb, "f").get(e.toString() + "|" + t.toString() + "|" + n.toString());
@@ -32202,18 +32244,207 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 }
                 return !0
             }
-            deleteSpecificPart(e, t, n, i, r, a) {
-                for (const s of get(this, Ib, "f"))
-                    if (s.type.configuration.id == e && s.x == t && s.y == n && s.z == i && s.rotation == r && s.rotationAxis == a)
+            deleteSpecificPart(targetId, positionX, positionY, positionZ, rotation, rotationAxis) {
+                for (const s of get(this, TrackPartArray, "f"))
+                    if (s.type.configuration.id == targetId && s.x == positionX && s.y == positionY && s.z == positionZ && s.rotation == rotation && s.rotationAxis == rotationAxis)
                         return get(this, Mb, "m", Ob).call(this, s),
                         !0;
                 return !1
+            }
+            deleteMatchingBlock(block) {
+                return this.deleteSpecificPart(block.type.configuration.id, block.x, block.y, block.z, block.rotation, block.rotationAxis);
+            }
+            deleteBlock(block) {
+                for (const s of get(this, TrackPartArray, "f")) {
+                    if (s == block) {
+                        console.log("deleted");
+                        get(this, Mb, "m", Ob).call(this, s);
+                        return !0;
+                    }
+                }
+                return !1
+            }
+            getVisibleBlocks(camera) {
+                const scene = get(this, Tb, "f").scene;
+                const renderer = get(this, Tb, "f").renderer;
+
+
+                camera.layers.enableAll();
+
+                const blockIdMap = new Map(); // randomColor -> block data
+                const colorToRGB = new Map(); // stores the exact RGB values used
+                const originalMaterials = new Map();
+                const originalVisibility = new Map();
+                const originalInstanceColors = new Map();
+
+                // Generate a random unique color for each block
+                const generateRandomColor = () => {
+                    let r, g, b, key;
+                    do {
+                        r = Math.floor(Math.random() * 256);
+                        g = Math.floor(Math.random() * 256);
+                        b = Math.floor(Math.random() * 256);
+                        key = (r << 16) | (g << 8) | b;
+                    } while (key === 0 || blockIdMap.has(key)); // Ensure unique and not black
+                    
+                    return { r, g, b, key };
+                };
+
+                // --- Step 1: Assign random ID colors and hide non-blocks ---
+                scene.traverse((obj) => {
+                    if (!obj.isMesh) return;
+
+                    originalMaterials.set(obj.uuid, obj.material);
+                    originalVisibility.set(obj.uuid, obj.visible);
+
+                    if (obj.userData.isBlock) {
+                        if (obj.isInstancedMesh) {
+                            originalInstanceColors.set(obj.uuid, obj.instanceColor);
+                            
+                            const colors = new Float32Array(obj.count * 3);
+                            for (let i = 0; i < obj.count; i++) {
+                                const { r, g, b, key } = generateRandomColor();
+                                
+                                colors[i*3] = r / 255;
+                                colors[i*3+1] = g / 255;
+                                colors[i*3+2] = b / 255;
+
+                                blockIdMap.set(key, { 
+                                    mesh: obj, 
+                                    instanceIndex: i, 
+                                    block: obj.userData.blockDataArray[i] 
+                                });
+                            }
+                            
+                            obj.geometry.setAttribute('instanceColor', new InstancedBufferAttribute(colors, 3));
+
+                            // Use ShaderMaterial to force solid instance colors
+                            obj.material = new ShaderMaterial({
+                                vertexShader: `
+                                    attribute vec3 instanceColor;
+                                    varying vec3 vColor;
+                                    void main() {
+                                        vColor = instanceColor;
+                                        gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+                                    }
+                                `,
+                                fragmentShader: `
+                                    varying vec3 vColor;
+                                    void main() {
+                                        gl_FragColor = vec4(vColor, 1.0);
+                                    }
+                                `,
+                                toneMapped: false
+                            });
+                        } else {
+                            const { r, g, b, key } = generateRandomColor();
+                            
+                            obj.material = new MeshBasicMaterial({ 
+                                color: new Color(r / 255, g / 255, b / 255),
+                                toneMapped: false
+                            });
+                            blockIdMap.set(key, { 
+                                mesh: obj, 
+                                block: obj.userData.blockData 
+                            });
+                        }
+
+                        obj.visible = true;
+                    } else {
+                        obj.visible = false;
+                    }
+                });
+
+                // --- Step 2: Render to target ---
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+
+                const renderTarget = new WebGLRenderTarget(width, height, {
+                    format: RGBAFormat,
+                    type: UnsignedByteType,
+                    depthBuffer: true,
+                    stencilBuffer: false,
+                    samples: 0
+                });
+
+                camera.updateMatrixWorld(true);
+                camera.updateProjectionMatrix();
+
+                const wasXR = renderer.xr.enabled;
+                const oldToneMapping = renderer.toneMapping;
+                const oldOutputColorSpace = renderer.outputColorSpace;
+                
+                renderer.xr.enabled = false;
+                renderer.toneMapping = 0;
+                renderer.outputColorSpace = LinearSRGBColorSpace;
+
+                renderer.setRenderTarget(renderTarget);
+                renderer.setClearColor(0x000000, 1);
+                renderer.clear(true, true, true);
+                renderer.render(scene, camera);
+                renderer.setRenderTarget(null);
+
+                renderer.xr.enabled = wasXR;
+                renderer.toneMapping = oldToneMapping;
+                renderer.outputColorSpace = oldOutputColorSpace;
+
+                // --- Step 3: Read pixels ---
+                const pixelBuffer = new Uint8Array(width * height * 4);
+                renderer.readRenderTargetPixels(renderTarget, 0, 0, width, height, pixelBuffer);
+
+                const visibleIds = new Set();
+                for (let i = 0; i < pixelBuffer.length; i += 4) {
+                    const r = pixelBuffer[i];
+                    const g = pixelBuffer[i+1];
+                    const b = pixelBuffer[i+2];
+                    const id = (r << 16) | (g << 8) | b;
+                    if (id !== 0) visibleIds.add(id);
+                }
+
+                // console.log(`Found ${visibleIds.size} unique IDs, ${blockIdMap.size} total blocks`);
+
+                // --- Step 4: Map IDs back to blocks ---
+                const visibleBlocks = [];
+                for (const id of visibleIds) {
+                    const data = blockIdMap.get(id);
+                    if (data && data.block) {
+                        visibleBlocks.push(data.block);
+                    }
+                }
+
+                // --- Step 5: Keep debug visualization visible ---
+                if (!window.DEBUG_ENABLED) {
+                    scene.traverse((obj) => {
+                        if (!obj.isMesh) return;
+                        
+                        const oldMat = obj.material;
+                        obj.material = originalMaterials.get(obj.uuid);
+                        obj.visible = originalVisibility.get(obj.uuid);
+                        
+                        if (oldMat && oldMat !== obj.material) {
+                            oldMat.dispose();
+                        }
+                        
+                        if (obj.isInstancedMesh) {
+                            if (originalInstanceColors.has(obj.uuid)) {
+                                obj.instanceColor = originalInstanceColors.get(obj.uuid);
+                            } else {
+                                obj.geometry.deleteAttribute('instanceColor');
+                                obj.instanceColor = null;
+                            }
+                        }
+                    });
+                }
+
+                renderTarget.dispose();
+
+                return visibleBlocks;
             }
             getBounds() {
                 return get(this, Db, "f")
             }
             shortRaycast(e) {
-                const t = new Vector3(Math.floor(e.ray.origin.x / Gb.partSize),Math.floor(e.ray.origin.y / Gb.partSize),Math.floor(e.ray.origin.z / Gb.partSize))
+                const t = new Vector3(Math.floor(e.ray.origin.x / TrackPartManager.partSize),Math.floor(e.ray.origin.y / TrackPartManager.partSize),Math.floor(e.ray.origin.z / TrackPartManager.partSize))
                   , n = new Set;
                 for (let e = -1; e <= 0; e++)
                     for (let i = -1; i <= 0; i++)
@@ -32266,7 +32497,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 for (const e of get(this, Cb, "f").getAllParts())
                     for (const [r,a] of e.colors) {
                         const s = [];
-                        for (const t of get(this, Ib, "f")) {
+                        for (const t of get(this, TrackPartArray, "f")) {
                             let i = t.color;
                             i == Environment2.Default && (i = n),
                             t.type == e && i == r && s.push(t)
@@ -32275,17 +32506,20 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                             if (null == a)
                                 throw new Error("Mesh is not loaded");
                             const e = new InstancedMesh(a.geometry,a.material,s.length);
+                            e.userData.blockDataArray = s;
+                            e.userData.isBlock = !0;
                             e.frustumCulled = !1,
                             e.receiveShadow = !0;
-                            for (let t = 0; t < s.length; ++t)
+                            for (let t = 0; t < s.length; ++t) {
                                 e.setMatrixAt(t, s[t].matrix);
-                            if (get(this, Tb, "f").scene.add(e),
-                            get(this, Bb, "f").push(e),
-                            null != i) {
+                            }
+                            get(this, Tb, "f").scene.add(e);
+                            get(this, Bb, "f").push(e);
+                            if (null != i) {
                                 const n = new RA(e,i);
-                                n.update(new Plane(new Vector3(0,1,0),0), t),
-                                get(this, Tb, "f").scene.add(n),
-                                get(this, Bb, "f").push(n)
+                                n.update(new Plane(new Vector3(0,1,0),0), t);
+                                get(this, Tb, "f").scene.add(n);
+                                get(this, Bb, "f").push(n);
                             }
                         }
                     }
@@ -32373,7 +32607,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                       , n = e.startOffset;
                     return n.applyQuaternion(t),
                     {
-                        position: new Vector3(e.x * Gb.partSize + n.x,e.y * Gb.partSize + n.y,e.z * Gb.partSize + n.z),
+                        position: new Vector3(e.x * TrackPartManager.partSize + n.x,e.y * TrackPartManager.partSize + n.y,e.z * TrackPartManager.partSize + n.z),
                         quaternion: t
                     }
                 }
@@ -32394,12 +32628,12 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
             getTrackData() {
                 const e = new TrackData(this.environment,get(this, Pb, "f"));
-                for (const t of get(this, Ib, "f"))
+                for (const t of get(this, TrackPartArray, "f"))
                     e.addPart(t.x, t.y, t.z, t.type.configuration.id, t.rotation, t.rotationAxis, t.color, t.checkpointOrder, t.startOrder);
                 return e
             }
             getBlockCount() {
-                return get(this, Ib, "f").length;
+                return get(this, TrackPartArray, "f").length;
             }
             loadTrackData(e, t=!0) {
                 return this.clear(),
@@ -32417,7 +32651,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         _b = new WeakMap,
         Cb = new WeakMap,
         Pb = new WeakMap,
-        Ib = new WeakMap,
+        TrackPartArray = new WeakMap,
         Rb = new WeakMap,
         Lb = new WeakMap,
         Db = new WeakMap,
@@ -32436,10 +32670,10 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         }
         ,
         Ob = function(e) {
-            const t = get(this, Ib, "f").indexOf(e);
+            const t = get(this, TrackPartArray, "f").indexOf(e);
             if (!(t >= 0))
                 throw new Error("Track part missing from parts list");
-            get(this, Ib, "f").splice(t, 1);
+            get(this, TrackPartArray, "f").splice(t, 1);
             e.type.configuration.tiles.rotated(e.rotation, e.rotationAxis).forEach(( (t, n, i) => {
                 const r = (e.x + t).toString() + "|" + (e.y + n).toString() + "|" + (e.z + i).toString()
                   , a = get(this, Rb, "f").get(r);
@@ -32472,7 +32706,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
               , t = 1 / 0
               , n = -1 / 0
               , i = -1 / 0;
-            for (const r of get(this, Ib, "f"))
+            for (const r of get(this, TrackPartArray, "f"))
                 e = Math.min(r.x, e),
                 t = Math.min(r.z, t),
                 n = Math.max(r.x, n),
@@ -32486,8 +32720,8 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }, "f")
         }
         ,
-        Gb.partSize = 5;    // important - global size for the mini part grid (lower is smaller grid)
-        const jb = Gb;
+        TrackPartManager.partSize = 5;    // important - global size for the mini part grid (lower is smaller grid)
+        const jb = TrackPartManager;
         var Qb, Yb, Kb, qb, Xb, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
@@ -34540,7 +34774,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                                     preserveDrawingBuffer: !0,
                                     antialias: !0
                                 }),
-                                IE.outputColorSpace = vt,
+                                IE.outputColorSpace = LinearSRGBColorSpace,
                                 LE = new Scene,
                                 RE = new OrthographicCamera(-1,1,1,-1,.5,Au.maxViewDistance),
                                 RE.position.set(1e3, 1e3, 1e3),
@@ -34579,7 +34813,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
             ))
         }
-        var editorFunctionsMap, audioContext, audioPerformanceMetric, LanguageMap, gameCanvas, loadingScreen, trackEnvironment, trackData, UserRecordManager, UserTrackManager, UserDataManager, selectedProfileSlot, confirmBox, touchEnabled, KeybindManager, testCallback, editorEnabled, hiddenOuterEditorDiv, topInnerEditorDiv, editorSavedTextDiv, editorSavedTextTimeoutId, editorSidePanelDiv, editorCategoryPanelDiv, editorHeightSelectorDiv, checkpointOrderSelector, trackCategorySelector, lS, editorToolbar, hS, dS, uS, pS, fS, mS, gS, vS, wS, yS, AS, bS, xS, editorCamera, editorUserCamera, heightModifierHeldDown, editorMoveForwards, editorMoveRight, editorMoveBackwards, editorMoveLeft, editorRotateViewUp, editorRotateViewDown, editorRotateViewLeft, editorRotateViewRight, DS, NS, BS, selectedBlockGhostModels, ghostBlockMaterial, gridMaterial, gridCubeMesh, gridMesh, editorDelete, mouseDown, mousePosition, jS, QS, selectedBlockPosition, KS, selectedBlockRotation, selectedBlockRotationAxis, smallGridEnabled, blockMixingEnabled, selectedBlockData, eM, tM, nM, blockDataMap, selectedBlockId, selectedBlockColor, pillarSelectedBlocks, editorUndoStack, sM, oM, createTrackNameUIElement, exitEditor, editorTest, editorPick, editorCopy, editorUndo, editorDeleteSelection, editorSelectPaste, editorSaveTrack, defaultOpenPartsMenu, getBlockEnvironment, mM, gM, setEditorSelectedCategory, setEditorSelectedBlock, editorHeight, blockCount, editorMove, updatePartRotation, playEditorEditSound, getSelectedBlockPosition, getOverlappingBlockData, editorDeleteTiles, editorCameraMovementUpdate, TM, generateBuilding, set = function(e, t, n, i, r) {
+        var editorFunctionsMap, audioContext, audioPerformanceMetric, LanguageMap, gameCanvas, loadingScreen, trackEnvironment, trackData, UserRecordManager, UserTrackManager, UserDataManager, selectedProfileSlot, confirmBox, touchEnabled, KeybindManager, testCallback, editorEnabled, hiddenOuterEditorDiv, topInnerEditorDiv, editorSavedTextDiv, editorSavedTextTimeoutId, editorSidePanelDiv, editorCategoryPanelDiv, editorHeightSelectorDiv, checkpointOrderSelector, trackCategorySelector, lS, editorToolbar, hS, dS, uS, pS, fS, mS, gS, vS, wS, yS, AS, bS, xS, editorCamera, editorUserCamera, heightModifierHeldDown, editorMoveForwards, editorMoveRight, editorMoveBackwards, editorMoveLeft, editorRotateViewUp, editorRotateViewDown, editorRotateViewLeft, editorRotateViewRight, DS, NS, BS, selectedBlockGhostModels, ghostBlockMaterial, gridMaterial, gridCubeMesh, gridMesh, editorDelete, mouseDown, mousePosition, jS, QS, selectedBlockPosition, KS, selectedBlockRotation, selectedBlockRotationAxis, smallGridEnabled, blockMixingEnabled, selectedBlockData, eM, tM, nM, blockDataMap, selectedBlockId, selectedBlockColor, pillarSelectedBlocks, editorUndoStack, sM, oM, optimizeTrack, createTrackNameUIElement, exitEditor, editorTest, editorPick, editorCopy, editorUndo, editorDeleteSelection, editorSelectPaste, editorSaveTrack, defaultOpenPartsMenu, getBlockEnvironment, mM, gM, setEditorSelectedCategory, setEditorSelectedBlock, editorHeight, blockCount, editorMove, updatePartRotation, playEditorEditSound, getSelectedBlockPosition, getOverlappingBlockData, editorDeleteTiles, editorCameraMovementUpdate, TM, generateBuilding, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
             if ("a" === i && !r)
@@ -34684,6 +34918,13 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             get(this, uS, "f").append(document.createTextNode(null !== (t = get(this, eM, "f")) && void 0 !== t ? t : get(this, LanguageMap, "f").get("Unnamed Track")))
         }
         ,
+        optimizeTrack = function() {
+            // console.log(get(this, trackEnvironment, "f"));
+            console.log(GLOBAL_VISIBLE_BLOCKS);
+            window.alert(get(this, trackEnvironment, "f").getBlockCount() + " blocks before optimization, " + GLOBAL_VISIBLE_BLOCKS.size + " after. Change: " + (GLOBAL_VISIBLE_BLOCKS.size - get(this, trackEnvironment, "f").getBlockCount()) + " blocks.");
+            get(this, trackEnvironment, "f").clear();
+            get(this, trackEnvironment, "f").addPartsFromBlockArray(GLOBAL_VISIBLE_BLOCKS);
+        },
         exitEditor = function(e) {
             const t = () => {
                 get(this, loadingScreen, "f").trigger(( () => {
@@ -35573,7 +35814,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 },
                 get(this, editorUserCamera, "f").minDistance = 4,   // IMPORTANT - editor camera distance parameters
                 get(this, editorUserCamera, "f").maxDistance = 6000,
-                set(this, NS, new jo, "f"),
+                set(this, NS, new Raycaster, "f"),
                 this.trackAuthor = o.getCurrentUserProfile().nickname,
                 set(this, ghostBlockMaterial, new MeshLambertMaterial({
                     transparent: !0,
@@ -36410,6 +36651,29 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 }
                 )),
                 v.appendChild(S);
+
+                const optimizeButton = document.createElement("button");
+                optimizeButton.className = "button",
+                optimizeButton.innerHTML = '<img class="button-icon" src="images/export.svg"> ',
+                optimizeButton.append(document.createTextNode(get(this, LanguageMap, "f").get("Optimize"))),
+                optimizeButton.addEventListener("click", ( () => {
+                    get(this, audioContext, "f").playUIClick();
+                    get(this, editorFunctionsMap, "m", optimizeTrack).call(this);
+                }
+                )),
+                v.appendChild(optimizeButton);
+
+                const clearOptimization = document.createElement("button");
+                clearOptimization.className = "button",
+                clearOptimization.innerHTML = '<img class="button-icon" src="images/export.svg"> ',
+                clearOptimization.append(document.createTextNode(get(this, LanguageMap, "f").get("Clear Optimization"))),
+                clearOptimization.addEventListener("click", ( () => {
+                    get(this, audioContext, "f").playUIClick();
+                    GLOBAL_VISIBLE_BLOCKS = new Set();
+                }
+                )),
+                v.appendChild(clearOptimization);
+
                 const M = document.createElement("div");
                 M.className = "track-settings-container",
                 get(this, topInnerEditorDiv, "f").appendChild(M),
@@ -36447,7 +36711,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 set(this, editorCategoryPanelDiv, document.createElement("div"), "f"),
                 get(this, editorCategoryPanelDiv, "f").className = "category-panel",
                 get(this, editorSidePanelDiv, "f").appendChild(get(this, editorCategoryPanelDiv, "f"));
-                const _ = new Ar(4 * jb.partSize,jb.partSize,4 * jb.partSize);
+                const _ = new BoxGeometry(4 * jb.partSize,jb.partSize,4 * jb.partSize);
                 _.translate(0, jb.partSize / 2, 0);
                 const C = new Mesh(_,get(this, ghostBlockMaterial, "f"))
                   , P = document.createElement("button");
@@ -36898,7 +37162,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             }
         }
         ;
-        var IM, RM, LM, DM, NM, BM, UM, set = function(e, t, n, i, r) {
+        var IM, RM, LM, DM, NM, BM, trackEditorInstance, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
             if ("a" === i && !r)
@@ -36920,16 +37184,16 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         DM = new WeakMap,
         NM = new WeakMap,
         BM = new WeakMap,
-        UM = new WeakMap;
+        trackEditorInstance = new WeakMap;
         const FM = class {
-            constructor(e, t, n, i, r, a, s, o, l, c, h, d, u, p, f, m, g) {
+            constructor(e, t, n, i, r, a, s, o, l, c, h, d, u, p, f, m, testFromEditor) {
                 IM.set(this, void 0),
                 RM.set(this, void 0),
                 LM.set(this, void 0),
                 DM.set(this, void 0),
                 NM.set(this, void 0),
                 BM.set(this, void 0),
-                UM.set(this, void 0),
+                trackEditorInstance.set(this, void 0),
                 this.isPaused = !1,
                 set(this, IM, e, "f"),
                 set(this, RM, i, "f"),
@@ -36937,33 +37201,33 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 set(this, DM, s, "f"),
                 set(this, NM, o, "f"),
                 set(this, BM, l, "f"),
-                set(this, UM, new TrackEditor(a,s,o,c,e,t,n,h,d,u,p,f,l,m), "f"),
-                get(this, UM, "f").enable(),
+                set(this, trackEditorInstance, new TrackEditor(a,s,o,c,e,t,n,h,d,u,p,f,l,m), "f"),
+                get(this, trackEditorInstance, "f").enable(),
                 get(this, IM, "f").clear(),
                 get(this, IM, "f").setPart(0, 0, 0, eA.Start, 0, RotationAxis.YPositive, Environment2.Default, null, 0),
                 get(this, IM, "f").generateMeshes(),
-                o.setCamera(get(this, UM, "f").camera),
-                get(this, UM, "f").setTestCallback(( () => {
+                o.setCamera(get(this, trackEditorInstance, "f").camera),
+                get(this, trackEditorInstance, "f").setTestCallback(( () => {
                     var e;
-                    get(this, UM, "f").disable();
+                    get(this, trackEditorInstance, "f").disable();
                     const t = {
-                        name: null !== (e = get(this, UM, "f").getTrackName()) && void 0 !== e ? e : a.get("Unnamed Track"),
-                        author: get(this, UM, "f").trackAuthor
+                        name: null !== (e = get(this, trackEditorInstance, "f").getTrackName()) && void 0 !== e ? e : a.get("Unnamed Track"),
+                        author: get(this, trackEditorInstance, "f").trackAuthor
                     };
-                    g(t, get(this, IM, "f").getTrackData(), ( () => {
-                        get(this, UM, "f").enable(),
-                        o.setCamera(get(this, UM, "f").camera)
+                    testFromEditor(t, get(this, IM, "f").getTrackData(), ( () => {
+                        get(this, trackEditorInstance, "f").enable(),
+                        o.setCamera(get(this, trackEditorInstance, "f").camera)
                     }
                     ))
                 }
                 ))
             }
             dispose() {
-                get(this, UM, "f").dispose(),
+                get(this, trackEditorInstance, "f").dispose(),
                 get(this, IM, "f").clear()
             }
             update(e) {
-                this.isPaused || get(this, UM, "f").update(e),
+                this.isPaused || get(this, trackEditorInstance, "f").update(e),
                 get(this, RM, "f").update(get(this, IM, "f")),
                 get(this, LM, "f").update(e, get(this, NM, "f").camera, get(this, IM, "f").sunDirection),
                 get(this, DM, "f").update(e, !1, get(this, NM, "f"), get(this, BM, "f")),
@@ -37531,7 +37795,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         c_ = new WeakMap,
         h_ = new WeakMap,
         d_ = new WeakMap;
-        const f_ = class {
+        const UITouchControls = class {
             constructor(e, t, n) {
                 c_.set(this, void 0),
                 h_.set(this, void 0),
@@ -38123,7 +38387,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         new WeakMap,
         new WeakMap,
         new WeakMap;
-        var wC, yC, AC, bC, xC, kC, EC, SC, MC, TC, _C, CC, PC, IC, RC, LC, DC, NC, BC, UC, zC, OC, FC, WC, VC, HC, GC, jC, QC, YC, KC, qC, XC, ZC, JC, $C, eP, ghostCars, nP, iP, rP, aP, sP, oP, lP, cP, hP, dP, uP, pP, fP, mP, gP, vP, set = function(e, t, n, i, r) {
+        var wC, yC, AC, bC, xC, kC, EC, SC, MC, TC, _C, CC, PC, IC, RC, LC, DC, NC, BC, UC, zC, OC, FC, WC, VC, HC, GC, jC, QC, YC, KC, touchControls, XC, ZC, JC, $C, eP, ghostCars, nP, iP, rP, aP, sP, oP, lP, cP, hP, dP, uP, pP, fP, mP, gP, vP, set = function(e, t, n, i, r) {
             if ("m" === i)
                 throw new TypeError("Private method is not writable");
             if ("a" === i && !r)
@@ -38169,7 +38433,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         QC = new WeakMap,
         YC = new WeakMap,
         KC = new WeakMap,
-        qC = new WeakMap,
+        touchControls = new WeakMap,
         XC = new WeakMap,
         ZC = new WeakMap,
         JC = new WeakMap,
@@ -38209,7 +38473,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 get(this, WC, "f").setOverridePosition(null),
                 get(this, HC, "f").setOverridePosition(null),
                 get(this, VC, "f").setOverridePosition(null)),
-                get(this, qC, "f").setEnabled(get(this, IC, "f").touchEnabled),
+                get(this, touchControls, "f").setEnabled(get(this, IC, "f").touchEnabled),
                 get(this, wC, "m", vP).call(this)
             } else
                 null === (i = get(this, OC, "f")) || void 0 === i || i.dispose(),
@@ -38258,7 +38522,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             const r = get(this, bC, "f").getStartTransform();
             if (null == r)
                 throw new Error("Start transform is null");
-            set(this, eP, new Aw(get(this, yC, "f"),r,null,get(this, JC, "f"),get(this, SC, "f"),get(this, MC, "f"),get(this, xC, "f"),get(this, bC, "f"),get(this, _C, "f")), "f"),
+            set(this, eP, new CarPhysics2(get(this, yC, "f"),r,null,get(this, JC, "f"),get(this, SC, "f"),get(this, MC, "f"),get(this, xC, "f"),get(this, bC, "f"),get(this, _C, "f")), "f"),
             get(this, eP, "f").notificationAudioEnabled = !0,
             get(this, eP, "f").addResetCallback(( () => {
                 get(this, JC, "f").reset = !1,
@@ -38383,7 +38647,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                         },
                         ghostCar.checkpointTimes = ghostCpTimes     // important - get ghost
                     }
-                    const i = new Aw(null,n,ghostCar.settings.recording,null,get(this, SC, "f"),get(this, MC, "f"),get(this, xC, "f"),get(this, bC, "f"),get(this, _C, "f"));
+                    const i = new CarPhysics2(null,n,ghostCar.settings.recording,null,get(this, SC, "f"),get(this, MC, "f"),get(this, xC, "f"),get(this, bC, "f"),get(this, _C, "f"));
                     i.setColors(ghostCar.settings.carColors),
                     i.audioVolume = .35,
                     get(this, wC, "m", gP).call(this),
@@ -38419,7 +38683,8 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
         }
         ;
         const AP = class {
-            constructor(e, t, n, i, r, a, s, o, l, c, h, d, u, p, f, m, g, v, w, y, A) {
+            constructor(e, t, n, i, r, a, s, o, l, c, h, d, u, p, f, m, g, v, w, y, A, fromEditor=false) {
+                this.fromEditor = fromEditor;
                 if (wC.add(this),
                 yC.set(this, void 0),
                 AC.set(this, void 0),
@@ -38451,7 +38716,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 QC.set(this, 0),
                 YC.set(this, null),
                 KC.set(this, null),
-                qC.set(this, void 0),
+                touchControls.set(this, void 0),
                 XC.set(this, void 0),
                 ZC.set(this, !1),
                 JC.set(this, void 0),
@@ -38508,13 +38773,13 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 }
                 )),
                 h.setCursorHiddenWhenInactive(!0),
-                set(this, qC, new f_(get(this, JC, "f"),get(this, MC, "f"),( () => {
+                set(this, touchControls, new UITouchControls(get(this, JC, "f"),get(this, MC, "f"),( () => {
                     var e;
                     !get(this, cP, "f") && (null === (e = get(this, eP, "f")) || void 0 === e ? void 0 : e.hasStarted()) && (get(this, eP, "f").hasFinished() || 0 == get(this, eP, "f").getNextCheckpointIndex() || !get(this, ZC, "f") || null != get(this, $C, "f") && (new Date).getTime() - get(this, $C, "f").getTime() < 250 ? (get(this, wC, "m", uP).call(this),
                     get(this, JC, "f").reset = !1) : get(this, JC, "f").reset = !0)
                 }
                 )), "f"),
-                get(this, qC, "f").setEnabled(get(this, IC, "f").touchEnabled),
+                get(this, touchControls, "f").setEnabled(get(this, IC, "f").touchEnabled),
                 get(this, wC, "m", dP).call(this, !0),
                 get(this, wC, "m", vP).call(this),
                 set(this, sP, new s_(s,c), "f"),
@@ -38533,7 +38798,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     null === (s = get(this, WC, "f")) || void 0 === s || s.setOverridePosition(null),
                     null === (o = get(this, HC, "f")) || void 0 === o || o.setOverridePosition(null),
                     null === (l = get(this, VC, "f")) || void 0 === l || l.setOverridePosition(null)),
-                    get(this, qC, "f").setEnabled(e)
+                    get(this, touchControls, "f").setEnabled(e)
                 }
                 ), "f")),
                 get(this, wC, "m", pP).call(this),
@@ -38664,7 +38929,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 get(this, CC, "f").setCursorHiddenWhenInactive(!1),
                 get(this, PC, "f").hide(),
                 get(this, wC, "m", dP).call(this, !1),
-                get(this, qC, "f").dispose(),
+                get(this, touchControls, "f").dispose(),
                 get(this, IC, "f").removeChangeListener(get(this, XC, "f")),
                 null === (t = get(this, YC, "f")) || void 0 === t || t.dispose(),
                 set(this, YC, null, "f"),
@@ -39632,7 +39897,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                             DI.updateProjectionMatrix(),
                             LI.scene.add(DI),
                             LI.setCamera(DI),
-                            II = new Aw(null,{
+                            II = new CarPhysics2(null,{
                                 position: new Vector3,
                                 quaternion: new Quaternion
                             },null,null,LI,null,null,null,null),
@@ -41541,7 +41806,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 const t = get(this, xD, "f").getStartTransform();
                 if (null == t)
                     throw new Error("Start transform is null");
-                set(this, RD, new Aw(get(this, bD, "f"),t,e,null,get(this, _D, "f"),get(this, CD, "f"),get(this, kD, "f"),get(this, xD, "f"),get(this, TD, "f")), "f"),
+                set(this, RD, new CarPhysics2(get(this, bD, "f"),t,e,null,get(this, _D, "f"),get(this, CD, "f"),get(this, kD, "f"),get(this, xD, "f"),get(this, TD, "f")), "f"),
                 get(this, RD, "f").audioVolume = 0,
                 get(this, RD, "f").start()
             }
@@ -42220,7 +42485,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             ) {
                 this.decodeDracoFile(e, t, null, null, gt, n).catch(n)
             }
-            decodeDracoFile(e, t, n, i, r=vt, a= () => {}
+            decodeDracoFile(e, t, n, i, r=LinearSRGBColorSpace, a= () => {}
             ) {
                 const s = {
                     attributeIDs: n || this.defaultAttributeIDs,
@@ -42237,7 +42502,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     if (t.key === n)
                         return t.promise;
                     if (0 === e.byteLength)
-                        throw new Error("THREE.DRACOLoader: Unable to re-decode a buffer with different settings. Buffer has already been transferred.")
+                        throw new Error("DRACOLoader: Unable to re-decode a buffer with different settings. Buffer has already been transferred.")
                 }
                 let i;
                 const r = this.workerNextTaskID++
@@ -42342,7 +42607,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                                 e._callbacks[n.id].reject(n);
                                 break;
                             default:
-                                console.error('THREE.DRACOLoader: Unexpected message, "' + n.type + '"')
+                                console.error('DRACOLoader: Unexpected message, "' + n.type + '"')
                             }
                         }
                         ,
@@ -42442,12 +42707,12 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                                     l = t.DecodeArrayToMesh(i, i.byteLength, o);
                                 else {
                                     if (c !== e.POINT_CLOUD)
-                                        throw new Error("THREE.DRACOLoader: Unexpected geometry type.");
+                                        throw new Error("DRACOLoader: Unexpected geometry type.");
                                     o = new e.PointCloud,
                                     l = t.DecodeArrayToPointCloud(i, i.byteLength, o)
                                 }
                                 if (!l.ok() || 0 === o.ptr)
-                                    throw new Error("THREE.DRACOLoader: Decoding failed: " + l.error_msg());
+                                    throw new Error("DRACOLoader: Decoding failed: " + l.error_msg());
                                 const h = {
                                     index: null,
                                     attributes: []
@@ -44357,7 +44622,8 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             e[e.PauseCar = 7] = "PauseCar",
             e[e.VerifyResult = 8] = "VerifyResult",
             e[e.DeterminismResult = 9] = "DeterminismResult",
-            e[e.UpdateResult = 10] = "UpdateResult"
+            e[e.UpdateResult = 10] = "UpdateResult",
+            e[e.RaycastResult = 11] = "RaycastResult" // for the editor optimization
         }(JB || (JB = {}));
         const $B = JB;
         var eU, tU, nU, iU, rU, aU, sU, set = function(e, t, n, i, r) {
@@ -44419,7 +44685,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                         i(!1);
                     else {
                         const o = VP.createMountainVertices(e.getBounds());
-                        if (null == Aw.models)
+                        if (null == CarPhysics2.models)
                             throw new Error("Car collision model not loaded");
                         const l = (set(this, rU, (s = get(this, rU, "f"),
                         a = s++,
@@ -44447,8 +44713,8 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                             },
                             trackData: e.toSaveString(),
                             carId: l,
-                            carCollisionShapeVertices: Aw.models.collisionShapeVertices,
-                            carMassOffset: Aw.massOffset,
+                            carCollisionShapeVertices: CarPhysics2.models.collisionShapeVertices,
+                            carMassOffset: CarPhysics2.massOffset,
                             carRecording: t.serialize(),
                             targetFrames: n.numberOfFrames
                         })
@@ -44475,7 +44741,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 var s, o;
                 if (null == get(this, tU, "f"))
                     throw new Error("TrackPartManager is not initialized");
-                if (null == Aw.models)
+                if (null == CarPhysics2.models)
                     throw new Error("Car collision model not loaded");
                 const l = (set(this, rU, (o = get(this, rU, "f"),
                 s = o++,
@@ -44486,6 +44752,9 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                         const t = e.data.carStates;
                         for (const e of t)
                             e.id == l && a(e)
+                    }
+                    else if (e.data.messageType == $B.RaycastResult) {
+                        const t = e.data.blocksHit;
                     }
                 }
                 ;
@@ -44501,11 +44770,11 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     },
                     trackData: i.toSaveString(),
                     carId: l,
-                    carCollisionShapeVertices: Aw.models.collisionShapeVertices,
-                    carMassOffset: Aw.massOffset,
+                    carCollisionShapeVertices: CarPhysics2.models.collisionShapeVertices,
+                    carMassOffset: CarPhysics2.massOffset,
                     carRecording: null == r ? void 0 : r.serialize()
                 });
-                const h = [new Vector3(.627909,.27 - Aw.suspensionResetLengthFront,1.3478).applyQuaternion(e.quaternion).add(e.position), new Vector3(-.627909,.27 - Aw.suspensionResetLengthFront,1.3478).applyQuaternion(e.quaternion).add(e.position), new Vector3(.720832,.27 - Aw.suspensionResetLengthRear,-1.52686).applyQuaternion(e.quaternion).add(e.position), new Vector3(-.720832,.27 - Aw.suspensionResetLengthRear,-1.52686).applyQuaternion(e.quaternion).add(e.position)]
+                const h = [new Vector3(.627909,.27 - CarPhysics2.suspensionResetLengthFront,1.3478).applyQuaternion(e.quaternion).add(e.position), new Vector3(-.627909,.27 - CarPhysics2.suspensionResetLengthFront,1.3478).applyQuaternion(e.quaternion).add(e.position), new Vector3(.720832,.27 - CarPhysics2.suspensionResetLengthRear,-1.52686).applyQuaternion(e.quaternion).add(e.position), new Vector3(-.720832,.27 - CarPhysics2.suspensionResetLengthRear,-1.52686).applyQuaternion(e.quaternion).add(e.position)]
                   , d = [(new Quaternion).setFromEuler((new Euler).set(0, Math.PI, 0)).multiply(e.quaternion), (new Quaternion).setFromEuler((new Euler).set(0, Math.PI, 0)).multiply(e.quaternion), (new Quaternion).setFromEuler((new Euler).set(0, Math.PI, 0)).multiply(e.quaternion), (new Quaternion).setFromEuler((new Euler).set(0, Math.PI, 0)).multiply(e.quaternion)];
                 return {
                     id: l,
@@ -44528,7 +44797,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                     },
                     collisionImpulses: [],
                     wheelInContact: [!1, !1, !1, !1],
-                    wheelSuspensionLength: [Aw.suspensionResetLengthFront, Aw.suspensionResetLengthFront, Aw.suspensionResetLengthRear, Aw.suspensionResetLengthRear],
+                    wheelSuspensionLength: [CarPhysics2.suspensionResetLengthFront, CarPhysics2.suspensionResetLengthFront, CarPhysics2.suspensionResetLengthRear, CarPhysics2.suspensionResetLengthRear],
                     wheelSuspensionVelocity: [0, 0, 0, 0],
                     wheelRotation: [0, 0, 0, 0],
                     wheelDeltaRotation: [0, 0, 0, 0],
@@ -49197,7 +49466,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 const f = new TimeObject(d.reduce(( (e, t) => Math.max(e, t.time.numberOfFrames + get(this, VO, "f"))), 0));
                 set(this, IO, f.time, "f"),
                 set(this, ghostCars, d.map(( (n, i) => {
-                    const r = new Aw(null,p,n.recording,null,o,l,a,t,h);
+                    const r = new CarPhysics2(null,p,n.recording,null,o,l,a,t,h);
                     r.notificationAudioEnabled = get(this, TO, "f") == i,
                     r.setColors(n.carColors);
                     const s = {
@@ -49420,7 +49689,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
             audioContext2.load("checkpoint", ["audio/checkpoint.flac"]),
             audioContext2.load("finish", ["audio/checkpoint.flac"]),
             $u.initResources(e);
-            const s = Aw.initResources();
+            const s = CarPhysics2.initResources();
             ex.initResources(e);
             const o = new GN
               , l = o.init(e)
@@ -49503,7 +49772,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                         L = new BD(h,x,b,A,k,f,S,m,v,y,audioContext2,c,p,g,e,!1,_,C,P,I,R),
                         J_()
                     }
-                    ),( (e, n, i) => {
+                    ),( (e, n, i) => {      // tests car driving from editor
                         const s = L = new AP(h,d,x,b,A,f,y,audioContext2,m,p,r,S,M,e,n,"custom",[],null,( () => {}
                         ),( () => {
                             q_(),
@@ -49513,7 +49782,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                         }
                         ),null)
                     }
-                    ));
+                    ), true);
                     return J_(),
                     t.isPaused = !0,
                     eC(( () => {
