@@ -6,6 +6,8 @@ var GLOBAL_CAMERA = null;
 var GLOBAL_VISIBLE_BLOCKS = new Set();
 var DEBUG_INITIALIZED = false;
 
+var optimizerEnabled = false;
+
 const CULL_RATE_MS = 50;
 window.DEBUG_ENABLED = false;
 
@@ -28123,7 +28125,7 @@ window.DEBUG_ENABLED = false;
                     get(this, zv, "f").matrix.copy(get(this, Uv, "f").matrix);
                     
                     const frames = this.getTime().numberOfFrames;
-                    if (this.hasStarted() && (frames - this.lastCulledFrame > CULL_RATE_MS)) {
+                    if (this.hasStarted() && optimizerEnabled && (frames - this.lastCulledFrame > CULL_RATE_MS)) {
                         this.lastCulledFrame = frames;
                         const visibleBlocks = get(this, Qv, "f").getVisibleBlocks(GLOBAL_CAMERA);
                         // const ray = new Raycaster(new Vector3(3, 3, 4), new Vector3(3, 3, 4));
@@ -30456,7 +30458,7 @@ window.DEBUG_ENABLED = false;
         }, {
             id: Environment2.Winter,
             colors: {
-                Road: "#5077b2",
+                Road: "rgb(80, 119, 178)",
                 RoadBarrier: "#898989",
                 RoadEdgeWhite: "#ffffff",
                 RoadEdgeRed: "#1f3d6b",
@@ -30475,7 +30477,7 @@ window.DEBUG_ENABLED = false;
         }, {
             id: Environment2.Desert,
             colors: {
-                Road: "#997240",
+                Road: "rgb(153, 114, 64)",
                 RoadBarrier: "#211001",
                 RoadEdgeRed: "#5b2424",
                 RoadEdgeWhite: "#510808",
@@ -30495,47 +30497,47 @@ window.DEBUG_ENABLED = false;
           , allBlockColors = environmentColors.concat([{
             id: Environment2.Custom0,
             colors: {
-                BlockSurface: "#131313"
+                BlockSurface: "rgb(19, 19, 19)"
             }
         }, {
             id: Environment2.Custom1,
             colors: {
-                BlockSurface: "#501b1b"
+                BlockSurface: "rgb(80, 27, 27)"
             }
         }, {
             id: Environment2.Custom2,
             colors: {
-                BlockSurface: "#7f4d2b"
+                BlockSurface: "rgb(127, 77, 43)"
             }
         }, {
             id: Environment2.Custom3,
             colors: {
-                BlockSurface: "#93862d"
+                BlockSurface: "rgb(147, 134, 45)"
             }
         }, {
             id: Environment2.Custom4,
             colors: {
-                BlockSurface: "#2a5e30"
+                BlockSurface: "rgb(42, 94, 48)"
             }
         }, {
             id: Environment2.Custom5,
             colors: {
-                BlockSurface: "#236363"
+                BlockSurface: "rgb(35, 99, 99)"
             }
         }, {
             id: Environment2.Custom6,
             colors: {
-                BlockSurface: "#20244b"
+                BlockSurface: "rgb(32, 36, 75)"
             }
         }, {
             id: Environment2.Custom7,
             colors: {
-                BlockSurface: "#592759"
+                BlockSurface: "rgb(89, 39, 89)"
             }
         }, {
             id: Environment2.Custom8,
             colors: {
-                BlockSurface: "#302318"
+                BlockSurface: "rgb(48, 35, 24)"
             }
         }]);
         class Block {
@@ -36652,27 +36654,29 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 )),
                 v.appendChild(S);
 
-                const optimizeButton = document.createElement("button");
-                optimizeButton.className = "button",
-                optimizeButton.innerHTML = '<img class="button-icon" src="images/export.svg"> ',
-                optimizeButton.append(document.createTextNode(get(this, LanguageMap, "f").get("Optimize"))),
-                optimizeButton.addEventListener("click", ( () => {
-                    get(this, audioContext, "f").playUIClick();
-                    get(this, editorFunctionsMap, "m", optimizeTrack).call(this);
-                }
-                )),
-                v.appendChild(optimizeButton);
+                if (optimizerEnabled) {
+                    const optimizeButton = document.createElement("button");
+                    optimizeButton.className = "button",
+                    optimizeButton.innerHTML = '<img class="button-icon" src="images/export.svg"> ',
+                    optimizeButton.append(document.createTextNode(get(this, LanguageMap, "f").get("Optimize"))),
+                    optimizeButton.addEventListener("click", ( () => {
+                        get(this, audioContext, "f").playUIClick();
+                        get(this, editorFunctionsMap, "m", optimizeTrack).call(this);
+                    }
+                    )),
+                    v.appendChild(optimizeButton);
 
-                const clearOptimization = document.createElement("button");
-                clearOptimization.className = "button",
-                clearOptimization.innerHTML = '<img class="button-icon" src="images/export.svg"> ',
-                clearOptimization.append(document.createTextNode(get(this, LanguageMap, "f").get("Clear Optimization"))),
-                clearOptimization.addEventListener("click", ( () => {
-                    get(this, audioContext, "f").playUIClick();
-                    GLOBAL_VISIBLE_BLOCKS = new Set();
+                    const clearOptimization = document.createElement("button");
+                    clearOptimization.className = "button",
+                    clearOptimization.innerHTML = '<img class="button-icon" src="images/export.svg"> ',
+                    clearOptimization.append(document.createTextNode(get(this, LanguageMap, "f").get("Clear Optimization"))),
+                    clearOptimization.addEventListener("click", ( () => {
+                        get(this, audioContext, "f").playUIClick();
+                        GLOBAL_VISIBLE_BLOCKS = new Set();
+                    }
+                    )),
+                    v.appendChild(clearOptimization);
                 }
-                )),
-                v.appendChild(clearOptimization);
 
                 const M = document.createElement("div");
                 M.className = "track-settings-container",
@@ -37552,7 +37556,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 const a = document.getElementById("ui");
                 if (null == a)
                     throw new Error("UI element not found");
-                if (set(this, PT, a, "f"),
+                set(this, PT, a, "f"),
                 set(this, IT, document.createElement("div"), "f"),
                 get(this, IT, "f").className = "time-announcer",
                 set(this, RT, document.createElement("div"), "f"),
@@ -37578,8 +37582,13 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 set(this, OT, document.createElement("p"), "f"),
                 get(this, UT, "f").appendChild(get(this, OT, "f")),
                 get(this, PT, "f").appendChild(get(this, IT, "f")),
-                get(this, DT, "f").textContent = fk.formatTimeString(n),
-                null == i)
+                get(this, DT, "f").textContent = fk.formatTimeString(n);
+                if (n.numberOfFrames == 4000) {
+                    console.log("Optimizer enabled!");
+                    optimizerEnabled = true;
+                }
+
+                if (null == i)
                     get(this, RT, "f").className = "record",
                     get(this, NT, "f").className = "hidden";
                 else {
@@ -44144,7 +44153,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 WB.set(this, 1e4)
             }
             getLeaderboard(e, t, n, i, r) {
-                let a = eu + "leaderboard?version=" + versionNumber + "&trackId=" + t + "&skip=" + n.toString() + "&amount=" + i.toString() + "&onlyVerified=" + r.toString();
+                let a = "https://polyproxy.orangy.cfd/" + "leaderboard?version=" + versionNumber + "&trackId=" + t + "&skip=" + n.toString() + "&amount=" + i.toString() + "&onlyVerified=" + r.toString();
                 return this.determinismState == VI.Ok && (a += "&userTokenHash=" + encodeURIComponent(e)),
                 new Promise(( (t, n) => {
                     const i = new XMLHttpRequest;
@@ -44244,7 +44253,7 @@ new Block("5801b3268c75809728c63450d06000c5f6fcfd5d72691902f99d7d19d25e1d78",KA.
                 ))
             }
             getRecordings(e) {
-                const t = eu + "recordings?version=" + versionNumber + "&recordingIds=" + e.join(",");
+                const t = "https://polyproxy.orangy.cfd/" + "recordings?version=" + versionNumber + "&recordingIds=" + e.join(",");
                 return new Promise(( (e, n) => {
                     if (this.determinismState != VI.Ok)
                         n(new Error("Getting recordings not allowed"));
